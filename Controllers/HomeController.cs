@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using TwitterClone.Data;
-using tt.Models;
+using TwitterClone.Models;
 
-namespace tt.Controllers;
+namespace TwitterClone.Controllers;
 
 public class HomeController : Controller
 {
@@ -19,53 +19,45 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        //return View();
-        //var tweets = _tweetRepo.Tweets.ToList();
-        var tweets = new List<Tweet> { new Tweet{ Id = 1, Username = "test", TweetContent = "test" } };
-        return View( new TweetViewModel { Tweets = tweets , NewTweet = new Tweet{ Id = 2 } } );
+        var tweets = _tweetRepo.Tweets.ToList();
+        return View(tweets);
     }
 
-    // public IActionResult Create()
-    // {
-    //     Console.WriteLine("Create Tweeeeeet");
-    //     return View();
-    // }
+    public IActionResult Search(string searchQuery)
+    {
+        var tweets = _tweetRepo.Tweets.ToList();
+
+        if (!string.IsNullOrEmpty(searchQuery))
+        {
+            tweets = tweets.Where(tweet =>
+                tweet.Username.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                tweet.TweetContent.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        return View("Index", tweets);
+    }
 
     [HttpPost]
-    public IActionResult Create(TweetViewModel tvmodel)
+    public IActionResult Create(string username, string tweet)
     {
-        Console.WriteLine("Create Tweet");
-        // if (tweet == null)
-        // {
-        //     return View();
-        // }
-        Console.WriteLine(tvmodel);
 
-        // if (ModelState.IsValid)
-        // {
-        //     _tweetRepo.Tweets.Add(tweet);
-        //     _tweetRepo.SaveChanges();
+        if( username == null || tweet == null )
+        {
+            return RedirectToAction("Index", "Home");
+        }
 
-        //     var tweets = _tweetRepo.Tweets.ToList();
-        //     foreach(var t in tweets)
-        //     {
-        //         Console.WriteLine(t.Username);
-        //         Console.WriteLine(t.TweetContent);
-        //     }
+        var newTweet = new Tweet { Username = username, TweetContent = tweet, CreatedAt = DateTime.Now };
+        _tweetRepo.Tweets.Add(newTweet);
+        _tweetRepo.SaveChanges();
 
-        //     //TempData["message"] = "Tweet has been added";
-        //     return RedirectToAction("Index", "Home");
-        // }
-
-        //return View();
         return RedirectToAction("Index", "Home");
     }
 
     public IActionResult Privacy()
     {
         return View();
-        // var tweets = _tweetRepo.Tweets.ToList();
-        // return View("Index",tweets);
+
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

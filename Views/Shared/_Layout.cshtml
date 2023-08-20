@@ -27,6 +27,12 @@
                         </li>
                     </ul>
                 </div>
+                <div class="d-flex align-items-center justify-content-center">
+                    <form asp-action="Search" asp-controller="Home" method="get">
+                        <input type="text" name="searchQuery" placeholder="Search tweets">
+                        <button type="submit">Search</button>
+                    </form>
+                </div>
             </div>
         </nav>
     </header>

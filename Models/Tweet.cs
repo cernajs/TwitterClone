@@ -1,44 +1,29 @@
 //using EntityFrameworkCore.InMemory;
+//using System.Data.Entity.Core;
+using System.ComponentModel.DataAnnotations;
 
 namespace TwitterClone.Data;
 
 public class Tweet
 {
-    //[Key]
+    [Key]
+    [Required]
     public int Id { get; set; }
-    //[Required]
+    [Required]
     //[MaxLength(50)]
     public string Username { get; set; }
-    //[Required]
+    [Required]
     //[MaxLength(280)]
     public string TweetContent { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public override string ToString()
     {
-        // if(TweetContent == null)
-        // {
-        //     return $"TweetContent: null";
-        // }
-        //return $"Username: {Username}, TweetContent: {TweetContent}";
-        return Id.ToString();
+        return $"Username: {Username}, TweetContent: {TweetContent}";
     }
-}
 
-// public enum TweetViewModelAction
-// {
-//     NewTweet,
-//     ListTweets
-// }
+    // User reference
+    public string UserId { get; set; }
+    public virtual ApplicationUser User { get; set; }
 
-public class TweetViewModel
-{
-    //public TweetViewModelAction Action { get; set; }
-    public IList<Tweet> Tweets { get; set; }
-    public Tweet? NewTweet { get; set; }
-
-    public override string ToString()
-    {
-        return $"Tweets: {Tweets}, NewTweet: {NewTweet}";
-    }
 }

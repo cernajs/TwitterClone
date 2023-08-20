@@ -33,3 +33,14 @@
 /Users/cernajs/dev/tt/bin/Debug/net7.0/Microsoft.EntityFrameworkCore.Abstractions.dll
 /Users/cernajs/dev/tt/bin/Debug/net7.0/Microsoft.EntityFrameworkCore.InMemory.dll
 /Users/cernajs/dev/tt/obj/Debug/net7.0/tt.csproj.CopyComplete
+/Users/cernajs/dev/tt/bin/Debug/net7.0/Microsoft.AspNetCore.Cryptography.Internal.dll
+/Users/cernajs/dev/tt/bin/Debug/net7.0/Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+/Users/cernajs/dev/tt/bin/Debug/net7.0/Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+/Users/cernajs/dev/tt/bin/Debug/net7.0/Microsoft.EntityFrameworkCore.Relational.dll
+/Users/cernajs/dev/tt/bin/Debug/net7.0/Microsoft.Extensions.Identity.Core.dll
+/Users/cernajs/dev/tt/bin/Debug/net7.0/Microsoft.Extensions.Identity.Stores.dll
+/Users/cernajs/dev/tt/bin/Debug/net7.0/Microsoft.Extensions.Options.dll
+/Users/cernajs/dev/tt/bin/Debug/net7.0/System.Security.Permissions.dll
+/Users/cernajs/dev/tt/obj/Debug/net7.0/tt.MvcApplicationPartsAssemblyInfo.cs
+/Users/cernajs/dev/tt/bin/Debug/net7.0/Microsoft.AspNetCore.Identity.UI.dll
+/Users/cernajs/dev/tt/bin/Debug/net7.0/Microsoft.Extensions.FileProviders.Embedded.dll

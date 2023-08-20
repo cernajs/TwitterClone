@@ -1,4 +1,4 @@
-namespace tt.Models;
+namespace TwitterClone.Models;
 
 public class ErrorViewModel
 {

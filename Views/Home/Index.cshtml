@@ -1,5 +1,4 @@
-﻿@model TwitterClone.Data.TweetViewModel
-@* @model IList<TwitterClone.Data.Tweet> *@
+﻿@model IList<TwitterClone.Data.Tweet>
 
 @{
     ViewData["Title"] = "Home Page";
@@ -95,26 +94,32 @@ public class Tweet
     public DateTime CreatedAt { get; set; }
 }
  *@
-<div class="container">
+
     <h1>Create Tweet</h1>
         <form action="@Url.Action("Create", "Home")" method="post">
-        <label asp-for="NewTweet.Username" for="username">Username: </label>
-        <input asp-for="NewTweet.Username" type="text" id="username" name="username" required><br><br>
+        <label for="username">Username: </label>
+        <input type="text" id="username" name="username" required><br><br>
         
-        <label asp-for="NewTweet.TweetContent" for="tweet">Tweet: </label>
-        <textarea asp-for="NewTweet.TweetContent" id="tweet" name="tweet" rows="4" cols="50" maxlength="280" required></textarea><br><br>
+        <label for="tweet">Tweet: </label>
+        <textarea id="tweet" name="tweet" rows="4" cols="50" maxlength="280" required></textarea><br><br>
         
         <button type="submit" class="btn btn-primary">Post Tweet</button>
         </form>
-</div>
 
-<div class="container">
+
+
     <h1>Recent Tweets</h1>
-    <ul>
-        @foreach (var tweet in Model.Tweets)
-        {
-            <li>@tweet.Username: @tweet.TweetContent - @tweet.CreatedAt</li>
-        }
-    </ul>
-</div>
+   
+        <ul>
+            
+            @foreach (var tweet in Model)
+            {
+                <div class="container">
+                    <li>@tweet.Username: @tweet.TweetContent - @tweet.CreatedAt</li>
+                </div>
+            }
+
+        </ul>
+
+
 
