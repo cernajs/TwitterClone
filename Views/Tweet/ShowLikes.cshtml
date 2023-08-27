@@ -1,0 +1,12 @@
+@model ICollection<ApplicationUser>
+
+<ul>
+    @foreach(var user in Model)
+    {
+        <li>
+            <div class="tweet-like">
+                <a href="/@user.UserName">@user.UserName</a>
+            </div>
+        </li>
+    }
+</ul>

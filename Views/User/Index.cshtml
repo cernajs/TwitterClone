@@ -1,0 +1,86 @@
+@model ApplicationUser
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    var currentUserId = UserManager.GetUserId(User);
+    var tweets = Model.Tweets.OrderByDescending(t => t.CreatedAt).Take(10);
+}
+
+<h1>@Model.UserName</h1>
+
+@if (User.Identity.IsAuthenticated && User.Identity.Name != Model.UserName)
+{
+    @if(!Model.Followers.Any(f => f.FollowerId == currentUserId))
+    {
+        <form method="post" asp-controller="User" asp-action="Follow">
+            <input type="hidden" name="userIdToFollow" value="@Model.Id" />
+            <button type="submit">Follow</button>
+        </form>
+    }
+    else
+    {
+        <form method="post" asp-controller="User" asp-action="Unfollow">
+            <input type="hidden" name="userIdToUnfollow" value="@Model.Id" />
+            <button type="submit">Unfollow</button>
+        </form>
+    }
+}
+
+@* <p>Follower Count : @Model.Followers.Count</p> *@
+@* <a asp-controller="User" asp-action="ShowUsers" asp-route-id="@Model.Id">
+    Follower Count : @Model.Followers.Count
+</a> *@
+
+<a asp-controller="User" asp-action="ShowUsers" asp-route-id="@Model.Id" asp-route-type="followers">Follower Count : @Model.Followers.Count</a>
+<a asp-controller="User" asp-action="ShowUsers" asp-route-id="@Model.Id" asp-route-type="followings">Following Count : @Model.Following.Count</a>
+
+
+<h1>Recent Tweets</h1>
+   
+        <ul>
+            
+            @foreach (var tweet in tweets)
+            {
+                <div class="container">
+                    <li>
+                        <a asp-controller="User" asp-action="Index" asp-route-id="@tweet.User.Id">@tweet.Username:</a>  
+                        @tweet.Username: @tweet.TweetContent - @tweet.CreatedAt <br>
+                        @* <p>@tweet.Likes.Count Likes</p> *@
+                        <a asp-controller="Tweet" asp-action="ShowLikes" asp-route-id="@tweet.Id">
+                            # of likes : @tweet.Likes.Count
+                        </a>
+
+                        @if(tweet.Likes.Any(l => l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) == false)
+                        {
+                            <form method="post" asp-action="Like" asp-controller="Tweet">
+                                <input type="hidden" name="tweetId" value="@tweet.Id" />
+                                <button type="submit">Like</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form method="post" asp-action="Unlike" asp-controller="Tweet">
+                                <input type="hidden" name="tweetId" value="@tweet.Id" />
+                                <button type="submit">Unlike</button>
+                            </form>
+                        }
+
+                    </li>
+                </div>
+                @* <div class="container">
+                    <li>
+                        <a asp-controller="User" asp-action="Index" asp-route-id="@tweet.User.Id">@tweet.Username:</a>  
+                        @tweet.Username: @tweet.TweetContent - @tweet.CreatedAt <br>
+                        <p>@tweet.Likes.Count Likes</p>
+                        <form method="post" asp-action="Like" asp-controller="Tweet">
+                            <input type="hidden" name="tweetId" value="@tweet.Id" />
+                            <button type="submit">Like</button>
+                        </form>
+                    </li>
+                </div> *@
+            }
+        </ul>
+
+<a asp-controller="Home" asp-action="Index">Back to Home</a>
