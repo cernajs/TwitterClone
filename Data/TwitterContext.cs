@@ -12,11 +12,13 @@ namespace TwitterClone.Data
         // public DbSet<Tweet> Tweets { get; set; }
         public DbSet<Tweet> Tweets { get; set; }
         public DbSet<UserFollower> UserFollowers { get; set; }
+        public DbSet<TweetLike> TweetLikes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
+            //followers
             builder.Entity<UserFollower>()
                 .HasKey(uf => new { uf.FollowerId, uf.FollowingId });
 
@@ -31,6 +33,29 @@ namespace TwitterClone.Data
                 .WithMany(u => u.Followers)
                 .HasForeignKey(uf => uf.FollowingId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+
+            //likes
+            builder.Entity<TweetLike>()
+                .HasKey(tl => new { tl.UserId, tl.TweetId });
+
+            builder.Entity<TweetLike>()
+                .HasOne(tl => tl.User)
+                .WithMany(u => u.LikedTweets)
+                .HasForeignKey(tl => tl.UserId);
+
+            builder.Entity<TweetLike>()
+                .HasOne(tl => tl.Tweet)
+                .WithMany(t => t.Likes)
+                .HasForeignKey(tl => tl.TweetId);
+
+
+            //comments
+            builder.Entity<Tweet>()
+                .HasMany(t => t.Replies)
+                .WithOne(t => t.ParentTweet)
+                .HasForeignKey(t => t.ParentTweetId)
+                .IsRequired(false); 
         }
     }
 }

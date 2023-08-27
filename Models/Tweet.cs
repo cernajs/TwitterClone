@@ -26,4 +26,15 @@ public class Tweet
     public string UserId { get; set; }
     public virtual ApplicationUser User { get; set; }
 
+
+    public virtual ICollection<TweetLike> Likes { get; set; } = new List<TweetLike>();
+
+
+    // replies structure
+    // ParentTweetId == null for a top-level tweet
+    public int? ParentTweetId { get; set; }
+    public virtual Tweet ParentTweet { get; set; }
+
+    public virtual ICollection<Tweet> Replies { get; set; } = new List<Tweet>();
+
 }

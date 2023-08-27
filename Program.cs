@@ -1,14 +1,18 @@
+using TwitterClone.Hubs;
 using TwitterClone.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+// using tt.Areas.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("ttIdentityDbContextConnection") ?? throw new InvalidOperationException("Connection string 'ttIdentityDbContextConnection' not found.");
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<TwitterContext>(options => options.UseInMemoryDatabase("TwitterClone"));
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<TwitterContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddDefaultIdentity<ApplicationUser>()
+    .AddEntityFrameworkStores<TwitterContext>();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -30,5 +34,11 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapRazorPages();
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHub<NotificationHub>("/notificationHub");
+});
 
 app.Run();

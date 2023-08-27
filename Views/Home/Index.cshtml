@@ -1,13 +1,12 @@
 ﻿@model IList<TwitterClone.Data.Tweet>
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@inject SignInManager<ApplicationUser> SignInManager
 
 @{
     ViewData["Title"] = "Home Page";
 }
 
-@* <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div> *@
 
 <style>
     /* Reset some default styles */
@@ -20,6 +19,10 @@ body, h1, h2, p, form {
 body {
     background-color: #f5f8fa;
     font-family: Arial, sans-serif;
+}
+
+li {
+    list-style-type: none;
 }
 
 /* Create a container for the tweet box */
@@ -83,43 +86,105 @@ a:hover {
     text-decoration: underline;
 }
 
+@* /* Style the tweet content */
+.tweet {
+    border-bottom: 1px solid #ccc;
+    padding: 15px 0;
+} *@
+
 </style>
 
-@* 
-public class Tweet
-{
-    public int Id { get; set; }
-    public string Username { get; set; }
-    public string TweetContent { get; set; }
-    public DateTime CreatedAt { get; set; }
-}
- *@
 
-    <h1>Create Tweet</h1>
-        <form action="@Url.Action("Create", "Home")" method="post">
-        <label for="username">Username: </label>
-        <input type="text" id="username" name="username" required><br><br>
-        
-        <label for="tweet">Tweet: </label>
-        <textarea id="tweet" name="tweet" rows="4" cols="50" maxlength="280" required></textarea><br><br>
-        
-        <button type="submit" class="btn btn-primary">Post Tweet</button>
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <h1>Create Tweet</h1>
+        @* <form action="@Url.Action("Create", "Home")" method="post"> *@
+        <form id="tweetCreationForm" method="post" asp-controller="Home" asp-action="Create">
+            <label for="username">Username: </label>
+            <input type="text" id="username" name="username" value="@User.Identity.Name" readonly><br><br>
+            
+            <label for="tweet">Tweet: </label>
+            <textarea id="tweet" name="tweet" rows="4" cols="50" maxlength="280" required></textarea><br><br>
+            
+            <button type="submit" class="btn btn-primary">Post Tweet</button>
         </form>
-
-
+    }
+    else
+    {
+        <p>You need to <a href="/Identity/Account/Login">login</a> to post tweets.</p>
+    }
 
     <h1>Recent Tweets</h1>
    
-        <ul>
-            
-            @foreach (var tweet in Model)
+        <ul id="tweetFeed">
+            @{
+                var TopLevelTweets = Model.Where(t => t.ParentTweetId == null);
+            }
+            @foreach (var tweet in TopLevelTweets)
             {
                 <div class="container">
-                    <li>@tweet.Username: @tweet.TweetContent - @tweet.CreatedAt</li>
+                    <li>
+                        <a asp-controller="User" asp-action="Index" asp-route-id="@tweet.User.Id">@tweet.Username:</a>  
+                        @tweet.Username: @tweet.TweetContent - @tweet.CreatedAt <br>
+                        @* <p>@tweet.Likes.Count Likes</p> *@
+                        <span class="likes-count">
+                            <a asp-controller="Tweet" asp-action="ShowLikes" asp-route-id="@tweet.Id">
+                                # of likes : <span class="actual-count">@tweet.Likes.Count</span>
+                            </a>
+                        </span>
+
+                        @if(tweet.Likes.Any(l => l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) == false)
+                        {
+                            <form method="post" asp-action="Like" asp-controller="Tweet" class="like-form">
+                                <input type="hidden" name="tweetId" value="@tweet.Id" />
+                                <button type="submit">Like</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form method="post" asp-action="Unlike" asp-controller="Tweet" class="unlike-form">
+                                <input type="hidden" name="tweetId" value="@tweet.Id" />
+                                <button type="submit">Unlike</button>
+                            </form>
+                        }
+
+                        @* @foreach(var reply in tweet.Replies)
+                        {
+                            <div class="container">
+                                <li>
+                                    <a asp-controller="User" asp-action="Index" asp-route-id="@reply.User.Id">@reply.Username:</a>
+                                    @reply.Username: @reply.TweetContent - @reply.CreatedAt <br>
+                                    <p>@reply.Likes.Count Likes</p>
+                                    <a asp-controller="Tweet" asp-action="ShowLikes" asp-route-id="@reply.Id">
+                                        # of likes : @reply.Likes.Count.
+                                    </a>
+
+                                    @if (reply.Likes.Any(l => l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) == false)
+                                    {
+                                        <form method="post" asp-action="Like" asp-controller="Tweet">
+                                            <input type="hidden" name="tweetId" value="@reply.Id" />
+                                            <button type="submit">Like</button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form method="post" asp-action="Unlike" asp-controller="Tweet">
+                                            <input type="hidden" name="tweetId" value="@reply.Id" />
+                                            <button type="submit">Unlike</button>
+                                        </form>
+                                    }
+                                </li>
+                            </div>
+                        } *@
+
+                        <h1>Reply</h1>
+                        <form method="post" asp-action="Reply" asp-controller="Tweet">
+                            <input type="hidden" name="ParentTweetId" value="@tweet.Id" />
+                            <textarea name="Content"></textarea>
+                            <button type="submit">Reply</button>
+                        </form>
+
+                    </li>
                 </div>
             }
-
         </ul>
-
-
-

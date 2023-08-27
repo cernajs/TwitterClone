@@ -11,5 +11,9 @@ namespace TwitterClone.Data
 
         public virtual ICollection<UserFollower> Followers { get; set; } = new List<UserFollower>();
         public virtual ICollection<UserFollower> Following { get; set; } = new List<UserFollower>();
+
+
+        //likes
+        public virtual ICollection<TweetLike> LikedTweets { get; set; } = new List<TweetLike>();
     }
 }

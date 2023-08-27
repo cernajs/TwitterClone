@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/tt.styles.css" asp-append-version="true" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.9/signalr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 </head>
 <body>
     <header>
@@ -26,12 +30,14 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
-                </div>
-                <div class="d-flex align-items-center justify-content-center">
-                    <form asp-action="Search" asp-controller="Home" method="get">
-                        <input type="text" name="searchQuery" placeholder="Search tweets">
-                        <button type="submit">Search</button>
-                    </form>
+                
+                    <div class="d-flex align-items-center justify-content-center">
+                        <form asp-action="Search" asp-controller="Home" method="get">
+                            <input type="text" name="searchQuery" placeholder="Search tweets">
+                            <button type="submit">Search</button>
+                        </form>
+                    </div>
+                    <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
@@ -42,14 +48,162 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    @* <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2023 - tt - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
-    </footer>
+    </footer> *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <script>
+        //SIGNALR
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/notificationHub")
+            .build();
+
+        connection.on("ReceiveNotification", (message) => {
+            alert(message);
+        });
+
+
+        connection.on("ReceiveTweet", function (id, username, content, createdAt, likesCount, userId, isLikedByCurrentUser) {
+            addTweetToFeed(id, username, content, createdAt, likesCount, userId, isLikedByCurrentUser);
+        });
+
+        connection.start().catch(err => console.error(err.toString()));
+
+        function addTweetToFeed(id, username, content, createdAt, likesCount, userId, isLikedByCurrentUser) {
+            const feed = $("#tweetFeed");
+
+            let likesSection = '';
+            if(!isLikedByCurrentUser) {
+                likesSection = `
+                    <form method="post" action="/Tweet/Like" class="like-form">
+                        <input type="hidden" name="tweetId" value="${id}" />
+                        <button type="submit">Like</button>
+                    </form>
+                `;
+            } else {
+                likesSection = `
+                    <form method="post" action="/Tweet/Unlike" class="unlike-form">
+                        <input type="hidden" name="tweetId" value="${id}" />
+                        <button type="submit">Unlike</button>
+                    </form>
+                `;
+            }
+
+            const tweetHtml = `
+                <div class="container">
+                    <li>
+                        <a href="/User/Index/${userId}">${username}:</a>
+                        ${username}: ${content} - ${createdAt} <br>
+                        @* <p>${likesCount} Likes</p> *@
+                        <a href="/Tweet/ShowLikes/${id}"># of likes: ${likesCount}</a>
+                        ${likesSection}
+                        <h1>Reply</h1>
+                        <form method="post" action="/Tweet/Reply">
+                            <input type="hidden" name="ParentTweetId" value="${id}" />
+                            <textarea name="Content"></textarea>
+                            <button type="submit">Reply</button>
+                        </form>
+                    </li>
+                </div>
+            `;
+
+            feed.prepend(tweetHtml);
+        }
+
+
+
+        $(document).ready(function () {
+
+            $(".like-form").submit(function(event) {
+                event.preventDefault();
+                handleLikeUnlike($(this), true);
+            });
+
+            $(".unlike-form").submit(function(event) {
+                event.preventDefault(); 
+                handleLikeUnlike($(this), false);
+            });
+
+            function handleLikeUnlike($form, isLike) {
+
+                const formData = $form.serialize(); 
+                const url = $form.attr('action');
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            if (isLike) {
+                                // Swap the "Like" button with "Unlike"
+                                $form.removeClass('like-form').addClass('unlike-form')
+                                    .unbind('submit').submit(function(event) {
+                                        event.preventDefault(); 
+                                        handleLikeUnlike($(this), false);
+                                    });
+
+                                $form.find('button').text('Unlike');
+                                $form.attr('action', '/Tweet/Unlike');
+                            } else {
+                                // Swap the "Unlike" button with "Like"
+                                $form.removeClass('unlike-form').addClass('like-form')
+                                    .unbind('submit').submit(function(event) {
+                                        event.preventDefault(); 
+                                        handleLikeUnlike($(this), true);
+                                    });
+
+                                $form.find('button').text('Like');
+                                $form.attr('action', '/Tweet/Like');
+                            }
+
+                            const countElem = $form.closest('li').find('.likes-count .actual-count');
+                            const currentCount = parseInt(countElem.text(), 10);  // Convert the text to an integer
+                            countElem.text(isLike ? currentCount + 1 : currentCount - 1);
+                        } else {
+                            alert('Action failed. Try again later.');
+                        }
+                    },
+                    error: function() {
+                        alert('Request failed.');
+                    }
+                });
+            }
+
+
+
+
+            $("#tweetCreationForm").submit(function (event) {
+                event.preventDefault(); // Prevent form from submitting
+
+                const formData = $(this).serialize(); // Get form data
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        if (response.success) {
+                            // tweet is added to the feed through SignalR.
+
+                        } else {
+                            alert('Failed to create tweet!');
+                        }
+                    },
+                    error: function () {
+                        alert('Failed to submit tweet!');
+                    }
+                });
+            });
+        });
+
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
