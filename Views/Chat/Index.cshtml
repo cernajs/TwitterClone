@@ -1,0 +1,27 @@
+@{
+    ViewBag.Title = "Chat";
+}
+
+<!-- You can use Razor to render the script dynamically, filling in values for currentUserId and otherUserId -->
+<script>
+    var currentUserId = '@ViewBag.CurrentUserId';
+    var otherUserId = '@ViewBag.OtherUserId';
+</script>
+
+<div id="chatArea">
+    <!-- Messages will be appended here -->
+</div>
+
+<textarea id="messageInput"></textarea>
+<button id="sendChatButton">Send</button>
+
+
+<style>
+    .myMessage {
+        text-align: left;
+    }
+    .otherMessage {
+        text-align: right;
+    }
+</style>
+

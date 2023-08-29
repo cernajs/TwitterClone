@@ -1,0 +1,14 @@
+namespace TwitterClone.Data;
+using Microsoft.EntityFrameworkCore;
+
+public class UsernameSearch : ISearchStrategy
+{
+    public async Task<IEnumerable<Tweet>> SearchAsync(string query, TwitterContext context)
+    {
+        return await context.Tweets
+                      .Include(t => t.User)
+                      .Where(t => t.Username.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                                  t.TweetContent.Contains(query, StringComparison.OrdinalIgnoreCase))
+                      .ToListAsync();
+    }
+}
