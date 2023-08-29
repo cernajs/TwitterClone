@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
@@ -14,8 +15,12 @@ public class NotificationHub : Hub
         _userManager = userManager;
     }
 
+    public async Task SendMessage(string recipientId, string content)
+    {
+        Console.WriteLine(recipientId + " " + content);
+        await Clients.User(recipientId).SendAsync("ReceiveMessage", content, Context.User.Identity.Name);
+    }
 
-    //???
     public async Task SendToSpecificUser(string userId, string message)
     {
         await Clients.User(userId).SendAsync("ReceiveNotification", message);

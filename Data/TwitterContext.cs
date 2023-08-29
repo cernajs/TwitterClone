@@ -13,6 +13,9 @@ namespace TwitterClone.Data
         public DbSet<Tweet> Tweets { get; set; }
         public DbSet<UserFollower> UserFollowers { get; set; }
         public DbSet<TweetLike> TweetLikes { get; set; }
+        public DbSet<Hashtag> Hashtags { get; set; }
+        public DbSet<TweetHashtag> TweetHashtags { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -55,7 +58,34 @@ namespace TwitterClone.Data
                 .HasMany(t => t.Replies)
                 .WithOne(t => t.ParentTweet)
                 .HasForeignKey(t => t.ParentTweetId)
-                .IsRequired(false); 
+                .IsRequired(false);
+
+            //hashtags
+            builder.Entity<TweetHashtag>()
+                .HasKey(th => new { th.TweetId, th.HashtagId });
+
+            builder.Entity<TweetHashtag>()
+                .HasOne(th => th.Tweet)
+                .WithMany(t => t.TweetHashtags)
+                .HasForeignKey(th => th.TweetId);
+
+            builder.Entity<TweetHashtag>()
+                .HasOne(th => th.Hashtag)
+                .WithMany(h => h.TweetHashtags)
+                .HasForeignKey(th => th.HashtagId);
+
+            //chat
+            builder.Entity<ChatMessage>()
+                .HasOne(m => m.Sender)
+                .WithMany(u => u.SentMessages)
+                .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ChatMessage>()
+                .HasOne(m => m.Recipient)
+                .WithMany(u => u.ReceivedMessages)
+                .HasForeignKey(m => m.RecipientId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

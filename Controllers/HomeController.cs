@@ -1,13 +1,17 @@
-﻿using System;
+﻿using System.Security.AccessControl;
+using Internal;
+using System;
 using Microsoft.AspNetCore.Identity;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SignalR;
+using System.Text.RegularExpressions;
 
 using TwitterClone.Data;
 using TwitterClone.Models;
 using TwitterClone.Hubs;
+using TwitterClone.SD;
 
 namespace TwitterClone.Controllers;
 
@@ -17,44 +21,65 @@ public class HomeController : Controller
     private readonly TwitterContext _tweetRepo;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IHubContext<NotificationHub> _hubContext;
-    
-    //private readonly IViewStrategy _viewStrategy;
+    private readonly ITweetRetrievalStrategy _viewStrategy;
 
-    public HomeController(ILogger<HomeController> logger, TwitterContext db, UserManager<ApplicationUser> userManager, IHubContext<NotificationHub> hubContext)
+    public HomeController(ILogger<HomeController> logger, TwitterContext db,
+                         UserManager<ApplicationUser> userManager, IHubContext<NotificationHub> hubContext,
+                         ITweetRetrievalStrategy viewStrategy)
     {
         _logger = logger;
         _tweetRepo = db;
         _userManager = userManager;
         _hubContext = hubContext;
-        //_viewStrategy = viewStrategy;
+        _viewStrategy = viewStrategy;
     }
 
 
     public async Task<IActionResult> Index()
     {
         //retreive tweets by given strategy
-        //var tweets = _viewStrategy.GetTweets();
+        var tweets = await _viewStrategy.GetTweetsAsync(userId : null);
 
-        var tweets = await _tweetRepo.Tweets
-            .Include(t => t.User)
-            .Include(t => t.Likes)
-            .Include(t => t.Replies).ToListAsync();
+        // var tweets = await _tweetRepo.Tweets
+        //     .Include(t => t.User)
+        //     .Include(t => t.Likes)
+        //     .Include(t => t.Replies).ToListAsync();
         return View(tweets);
     }
 
-    public IActionResult Search(string searchQuery)
+    public async Task<IActionResult> Search(string searchQuery)
     {
-        var tweets = _tweetRepo.Tweets.Include(t => t.User).ToList();
+        // var tweets = _tweetRepo.Tweets.Include(t => t.User).ToList();
 
-        if (!string.IsNullOrEmpty(searchQuery))
-        {
-            tweets = tweets.Where(tweet =>
-                tweet.Username.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                tweet.TweetContent.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+        // if (!string.IsNullOrEmpty(searchQuery))
+        // {
+        //     tweets = tweets.Where(tweet =>
+        //         tweet.Username.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+        //         tweet.TweetContent.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+        //         .ToList();
+        // }
+
+        // return View("Index", tweets);
+
+        ISearchStrategy searchStrategy;
+
+        if (!string.IsNullOrEmpty(searchQuery)) {
+            if (searchQuery.StartsWith("#"))
+            {
+                searchStrategy = new HashtagSearch();
+            }
+            else
+            {
+                searchStrategy = new UsernameSearch();
+            }
+            var tweets = await searchStrategy.SearchAsync(searchQuery, _tweetRepo);
+            return View("Index", tweets);
         }
-
-        return View("Index", tweets);
+        else {
+            var tweets = _tweetRepo.Tweets.Include(t => t.User).ToList();
+            return View("Index", tweets);
+        }
+        
     }
 
     [HttpPost]
@@ -70,8 +95,25 @@ public class HomeController : Controller
             return RedirectToAction("Index", "Home");
         }
 
+        MatchCollection matches = Regex.Matches(tweet, @"#\w+");
+        List<string> hashtags = matches.Cast<Match>().Select(match => match.Value).ToList();
+
+        if(hashtags.Count != 0)
+        {
+            tweet = StaticMethods.ConvertToHtmlWithClickableHashtags(tweet);
+            foreach(var hashtag in hashtags)
+            {
+                Console.WriteLine($"hashtag registered : {hashtag}");
+                var newHashtag = new Hashtag
+                {
+                    Tag = hashtag
+                };
+                _tweetRepo.Hashtags.Add(newHashtag);
+            }
+        }
+
         // Create and save the new tweet.
-        var newTweet = new Tweet 
+        var newTweet = new Tweet
         { 
             UserId = user.Id, 
             Username = user.UserName, 
@@ -94,6 +136,22 @@ public class HomeController : Controller
 
     }
 
+
+    // public async Task SendNotification(string userId, string message)
+    // {
+    //     await Clients.User(userId).SendAsync("ReceiveNotification", message);
+    // }
+
+    // public async Task SendTweet(string username, string content, string createdAt)
+    // {
+    //     await Clients.All.SendAsync("ReceiveTweet", username, content, createdAt);
+    // }
+
+    // public async Task SendMessage(string user, string message)
+    // {
+    //     await Clients.All.SendAsync("ReceiveMessage", user, message);
+    // }
+
     private async Task NotifyFollowersOfNewTweet(string userId, string message)
     {
         // Fetch all followers of the user.
@@ -105,6 +163,7 @@ public class HomeController : Controller
         foreach(var follower in followers)
         {
             await _hubContext.Clients.User(follower).SendAsync("ReceiveNotification", message);
+            //await _hubContext.SendNotification(follower, message);
         }
     }
 

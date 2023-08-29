@@ -27,7 +27,8 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            @* <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a> *@
+                            <a asp-controller="Chat" asp-action="Index">Go to Chat</a>
                         </li>
                     </ul>
                 
@@ -58,50 +59,27 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     
     <script>
-        //SIGNALR
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/notificationHub")
-            .build();
-
-        connection.on("ReceiveNotification", (message) => {
-            alert(message);
-        });
-
-
-        connection.on("ReceiveTweet", function (id, username, content, createdAt, likesCount, userId, isLikedByCurrentUser) {
-            addTweetToFeed(id, username, content, createdAt, likesCount, userId, isLikedByCurrentUser);
-        });
-
-        connection.start().catch(err => console.error(err.toString()));
-
+    
         function addTweetToFeed(id, username, content, createdAt, likesCount, userId, isLikedByCurrentUser) {
             const feed = $("#tweetFeed");
-
-            let likesSection = '';
-            if(!isLikedByCurrentUser) {
-                likesSection = `
-                    <form method="post" action="/Tweet/Like" class="like-form">
-                        <input type="hidden" name="tweetId" value="${id}" />
-                        <button type="submit">Like</button>
-                    </form>
-                `;
-            } else {
-                likesSection = `
-                    <form method="post" action="/Tweet/Unlike" class="unlike-form">
-                        <input type="hidden" name="tweetId" value="${id}" />
-                        <button type="submit">Unlike</button>
-                    </form>
-                `;
-            }
 
             const tweetHtml = `
                 <div class="container">
                     <li>
                         <a href="/User/Index/${userId}">${username}:</a>
                         ${username}: ${content} - ${createdAt} <br>
-                        @* <p>${likesCount} Likes</p> *@
-                        <a href="/Tweet/ShowLikes/${id}"># of likes: ${likesCount}</a>
-                        ${likesSection}
+
+                        @* <a href="/Tweet/ShowLikes/${id}"># of likes: ${likesCount}</a> *@
+                        <span class="likes-count">
+                            <a href="/Tweet/ShowLikes/${id}">
+                                # of likes : <span class="actual-count">${likesCount}</span>
+                            </a>
+                        </span>
+                        @* ${likesSection} *@
+                        <form method="post" action="/Tweet/Like" class="like-form">
+                            <input type="hidden" name="tweetId" value="${id}" />
+                            <button type="submit">Like</button>
+                        </form>
                         <h1>Reply</h1>
                         <form method="post" action="/Tweet/Reply">
                             <input type="hidden" name="ParentTweetId" value="${id}" />
@@ -115,22 +93,36 @@
             feed.prepend(tweetHtml);
         }
 
+        function addChatMessageToFeed(username, message) {
+            const feed = $("#chatFeed");
+
+            const chatMessageHtml = `
+                <div class="container">
+                    <li>
+                        @* <a href="/User/Index/${userId}"></a> *@
+                        ${username}: ${message}
+                    </li>
+                </div>
+            `;
+
+            feed.prepend(chatMessageHtml);
+        }
 
 
         $(document).ready(function () {
 
-            $(".like-form").submit(function(event) {
-                event.preventDefault();
+            $('#tweetFeed').on('submit', '.like-form', function(e) {
+                e.preventDefault();
                 handleLikeUnlike($(this), true);
             });
 
-            $(".unlike-form").submit(function(event) {
-                event.preventDefault(); 
+            $('#tweetFeed').on('submit', '.unlike-form', function(e) {
+                e.preventDefault();
                 handleLikeUnlike($(this), false);
             });
 
-            function handleLikeUnlike($form, isLike) {
 
+            function handleLikeUnlike($form, isLike) {
                 const formData = $form.serialize(); 
                 const url = $form.attr('action');
 
@@ -142,22 +134,12 @@
                         if (response.success) {
                             if (isLike) {
                                 // Swap the "Like" button with "Unlike"
-                                $form.removeClass('like-form').addClass('unlike-form')
-                                    .unbind('submit').submit(function(event) {
-                                        event.preventDefault(); 
-                                        handleLikeUnlike($(this), false);
-                                    });
-
+                                $form.removeClass('like-form').addClass('unlike-form');
                                 $form.find('button').text('Unlike');
                                 $form.attr('action', '/Tweet/Unlike');
                             } else {
                                 // Swap the "Unlike" button with "Like"
-                                $form.removeClass('unlike-form').addClass('like-form')
-                                    .unbind('submit').submit(function(event) {
-                                        event.preventDefault(); 
-                                        handleLikeUnlike($(this), true);
-                                    });
-
+                                $form.removeClass('unlike-form').addClass('like-form');
                                 $form.find('button').text('Like');
                                 $form.attr('action', '/Tweet/Like');
                             }
@@ -173,9 +155,8 @@
                         alert('Request failed.');
                     }
                 });
+                return false;
             }
-
-
 
 
             $("#tweetCreationForm").submit(function (event) {
@@ -200,6 +181,52 @@
                     }
                 });
             });
+
+
+            //SIGNALR
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/notificationHub")
+            .build();
+
+        connection.on("ReceiveNotification", (message) => {
+            alert(message);
+        });
+
+
+        connection.on("ReceiveTweet", function (id, username, content, createdAt, likesCount, userId, isLikedByCurrentUser) {
+            addTweetToFeed(id, username, content, createdAt, likesCount, userId, isLikedByCurrentUser);
+        });
+
+        connection.start().catch(err => console.error(err.toString()));
+
+        connection.on("ReceiveChatMessage", function (username, message) {
+            addChatMessageToFeed(username, message);
+        });
+
+
+
+        @* CHAT *@
+        $("#sendChatButton").click(function() {
+            sendMessage();
+        });
+
+        connection.on("ReceiveMessage", function (message, username) {
+            @* alert(message + " " + username);
+            var messageClass = username === '@User.Identity.Name' ? 'myMessage' : 'otherMessage'; *@
+            var messageElement = `<div class="otherMessage">${username}: ${message}</div>`;
+            document.getElementById("chatArea").innerHTML += messageElement;
+        });
+
+
+        function sendMessage() {
+            var message = document.getElementById("messageInput").value;
+            var messageElement = `<div class="myMessage">@User.Identity.Name: ${message}</div>`;
+            document.getElementById("chatArea").innerHTML += messageElement;
+            connection.invoke("SendMessage", otherUserId, message).catch(function (err) {
+                return console.error(err.toString());
+            });
+        }
+
         });
 
     </script>

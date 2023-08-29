@@ -15,5 +15,9 @@ namespace TwitterClone.Data
 
         //likes
         public virtual ICollection<TweetLike> LikedTweets { get; set; } = new List<TweetLike>();
+
+        //messages
+        public virtual ICollection<ChatMessage> SentMessages { get; set; }
+        public virtual ICollection<ChatMessage> ReceivedMessages { get; set; }
     }
 }

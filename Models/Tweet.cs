@@ -37,4 +37,6 @@ public class Tweet
 
     public virtual ICollection<Tweet> Replies { get; set; } = new List<Tweet>();
 
+    public virtual ICollection<TweetHashtag> TweetHashtags { get; set; } = new List<TweetHashtag>();
+
 }
