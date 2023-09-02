@@ -1,0 +1,127 @@
+@using TwitterClone.Models
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@inject SignInManager<ApplicationUser> SignInManager
+@model Tweet
+
+<link rel="stylesheet" href="~/css/tweetView.css" asp-append-version="true" />
+
+<link rel="stylesheet" href="~/css/modal.css" asp-append-version="true" />
+
+@if(Model is RetweetedTweet)
+{
+  @* var retweetedTweet = Model as RetweetedTweet;
+  Model = retweetedTweet.Tweet; *@
+  <p>This is Retweet</p>
+}
+<div class="clickable-div tweet-wrap" data-tweet-id="@Model.Id">
+  <div class="tweet-header">
+    <img src="avatar_url_here" alt="" class="avator">
+    <div class="tweet-header-info">
+      <a asp-controller="User" asp-action="Index" asp-route-id="@Model.User.Id">@Model.Username:</a> <span>@Model.CreatedAt</span>
+      <p>@Html.Raw(@Model.TweetContent)</p>
+    </div>
+  </div>
+
+  <div class="tweet-info-counts">
+    <span class="likes">
+      <a asp-controller="Tweet" asp-action="ShowLikes" asp-route-id="@Model.Id">
+        # of likes : <span class="actual-count">@Model.Likes.Count</span>
+      </a>
+    </span>
+  </div>
+
+  <div class="button-container-grid">
+    
+    <button type="submit" class="reply-button action-btn" data-tweet-id="@Model.Id">Reply</button>
+    @* <div class="comments">
+      
+      <svg class="feather feather-message-circle sc-dnqmqq jxshSx" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+      <div class="comment-count">33</div>
+    </div> *@
+
+    
+    @if(Model.Retweets.Any(r => r.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) == false)
+    {
+        @* <button type="submit" class="retweet-button action-btn" data-tweet-id="@Model.Id">Retweet</button> *@
+        <form method="post" asp-action="Retweet" asp-controller="Tweet" class="retweet-form">
+            <input type="hidden" name="tweetId" value="@Model.Id" />
+            <button class="action-btn" type="submit">Retweet</button>
+        </form>
+    }
+    else 
+    {
+        <form method="post" asp-action="Retweet" asp-controller="Tweet" class="unretweet-form">
+            <input type="hidden" name="tweetId" value="@Model.Id" />
+            <button class="action-btn" type="submit">Unretweet</button>
+        </form>
+    }
+    @* <form method="post" asp-action="Retweet" asp-controller="Tweet" class="retweet-form">
+        <input type="hidden" name="tweetId" value="@Model.Id" />
+        <button class="action-btn" type="submit">Retweet</button>
+      </form> *@
+
+
+    @* <div class="retweets">
+      <svg class="feather feather-repeat sc-dnqmqq jxshSx" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+      <div class="retweet-count">397</div>
+    </div> *@
+
+    @if (Model.Likes.Any(l => l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) == false)
+    {
+      <form method="post" asp-action="Like" asp-controller="Tweet" class="like-form">
+        <input type="hidden" name="tweetId" value="@Model.Id" />
+        <button class="action-btn" type="submit">Like</button>
+      </form>
+    }
+    else
+    {
+      <form method="post" asp-action="Unlike" asp-controller="Tweet" class="unlike-form">
+        <input type="hidden" name="tweetId" value="@Model.Id" />
+        <button class="action-btn" type="submit">Unlike</button>
+      </form>
+    }
+    @if(Model.Bookmarks.Any(b => b.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) == false)
+    {
+        @* <button type="submit" class="bookmark-button action-btn" data-tweet-id="@Model.Id">Bookmark</button> *@
+        <form method="post" asp-action="Bookmark" asp-controller="Tweet" class="bookmark-form">
+            <input type="hidden" name="tweetId" value="@Model.Id" />
+            <button class="action-btn" type="submit">Bookmark</button>
+        </form>
+    }
+    else 
+    {
+        @* <button type="submit" class="unbookmark-button action-btn" data-tweet-id="@Model.Id">Unbookmark</button> *@
+        <form method="post" asp-action="Bookmark" asp-controller="Tweet" class="unbookmark-form">
+            <input type="hidden" name="tweetId" value="@Model.Id" />
+            <button class="action-btn" type="submit">Unbookmark</button>
+        </form>
+    }
+    
+  </div>
+</div>
+
+
+<div class="modal reply-modal" data-tweet-id="@Model.Id">
+  <div class="modal-content">
+    <span class="close-button" id="closeModalReply">&times;</span>
+    <h2>Reply</h2>
+    <form id="ReplyForm" class="modal-form" method="post" asp-action="Reply" asp-controller="Tweet">
+      <input type="hidden" name="ParentTweetId" value="@Model.Id" />
+      <div class="form-row">
+        <textarea name="Content"></textarea>
+      </div>
+      <div class="form-row">
+        <button type="submit" class="save-button">Reply</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+@* <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(".clickable-div").on("click", function () {
+        const tweetId = $(this).data("tweet-id");
+        window.location.href = '@Url.Action("ViewReplies", "Tweet")/' + tweetId;
+    });
+</script> *@

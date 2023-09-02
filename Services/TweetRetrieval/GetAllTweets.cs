@@ -12,7 +12,11 @@ public class GetAllTweets : ITweetRetrievalStrategy {
         var tweets = await _tweetRepo.Tweets
             .Include(t => t.User)
             .Include(t => t.Likes)
+            .Include(t => t.Bookmarks)
+            .Include(t => t.Replies)
+            .Include(t => t.Retweets)
             .Include(t => t.Replies).ToListAsync();
+
         return tweets;
     }
 }

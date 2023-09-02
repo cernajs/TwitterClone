@@ -5,8 +5,24 @@
       "PackagePath": "staticwebassets/tt.bundle.scp.css"
     },
     {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/css/home.css",
+      "PackagePath": "staticwebassets/css/home.css"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/css/modal.css",
+      "PackagePath": "staticwebassets/css/modal.css"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/css/profile.css",
+      "PackagePath": "staticwebassets/css/profile.css"
+    },
+    {
       "Id": "/Users/cernajs/dev/tt/wwwroot/css/site.css",
       "PackagePath": "staticwebassets/css/site.css"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/css/tweetView.css",
+      "PackagePath": "staticwebassets/css/tweetView.css"
     },
     {
       "Id": "/Users/cernajs/dev/tt/wwwroot/favicon.ico",

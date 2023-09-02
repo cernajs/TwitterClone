@@ -17,7 +17,6 @@ public class NotificationHub : Hub
 
     public async Task SendMessage(string recipientId, string content)
     {
-        Console.WriteLine(recipientId + " " + content);
         await Clients.User(recipientId).SendAsync("ReceiveMessage", content, Context.User.Identity.Name);
     }
 

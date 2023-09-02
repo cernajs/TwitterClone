@@ -3,21 +3,30 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace TwitterClone.Data
+namespace TwitterClone.Data;
+
+public class ApplicationUser : IdentityUser
 {
-    public class ApplicationUser : IdentityUser
-    {
-        public virtual ICollection<Tweet> Tweets { get; set; } = new List<Tweet>();
-
-        public virtual ICollection<UserFollower> Followers { get; set; } = new List<UserFollower>();
-        public virtual ICollection<UserFollower> Following { get; set; } = new List<UserFollower>();
+    public string Bio { get; set; } = "This user has not set a bio yet.";
+    public string ProfilePicture { get; set; } = "";
 
 
-        //likes
-        public virtual ICollection<TweetLike> LikedTweets { get; set; } = new List<TweetLike>();
+    public virtual ICollection<Tweet> Tweets { get; set; } = new List<Tweet>();
 
-        //messages
-        public virtual ICollection<ChatMessage> SentMessages { get; set; }
-        public virtual ICollection<ChatMessage> ReceivedMessages { get; set; }
-    }
+    public virtual ICollection<UserFollower> Followers { get; set; } = new List<UserFollower>();
+    public virtual ICollection<UserFollower> Following { get; set; } = new List<UserFollower>();
+
+
+    //likes
+    public virtual ICollection<TweetLike> LikedTweets { get; set; } = new List<TweetLike>();
+
+    //messages
+    public virtual ICollection<ChatMessage> SentMessages { get; set; } = new List<ChatMessage>();
+    public virtual ICollection<ChatMessage> ReceivedMessages { get; set; } = new List<ChatMessage>();
+
+    //bookmarks
+    public virtual ICollection<TweetBookmark> BookmarkedTweets { get; set; } = new List<TweetBookmark>();
+
+    //retweets
+    public virtual ICollection<Retweet> Retweets { get; set; } = new List<Retweet>();
 }

@@ -3,188 +3,107 @@
 @using System.Security.Claims
 @inject SignInManager<ApplicationUser> SignInManager
 
+<style>
+    /* General Styles */
+.hidden-username {
+    display: none;
+}
+
+/* Tweet Form Styles */
+.tweet-form-container {
+    display: flex;
+    padding: 20px;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.user-avatar {
+    margin-right: 15px;
+    /* Add user avatar styles here */
+}
+
+.tweet-input-container {
+    flex-grow: 1;
+}
+
+.tweet-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 18px;
+    padding: 10px 0;
+    resize: none;
+}
+
+.tweet-action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.tweet-submit-btn {
+    background-color: #1DA1F2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 25px;
+    cursor: pointer;
+}
+
+.tweet-submit-btn:hover {
+    background-color: #0c85d0;
+}
+
+</style>
+
 @{
     ViewData["Title"] = "Home Page";
 }
 
 
-<style>
-    /* Reset some default styles */
-body, h1, h2, p, form {
-    margin: 0;
-    padding: 0;
+<link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+
+
+@if (SignInManager.IsSignedIn(User))
+{
+    @* <h1>Create Tweet</h1> *@
+    @* <form action="@Url.Action("Create", "Home")" method="post"> *@
+    <form id="tweetCreationForm" method="post" asp-controller="Home" asp-action="Create">
+        <label for="username">Username: </label>
+        <input type="text" id="username" name="username" value="@User.Identity.Name" readonly><br><br>
+        
+        <label for="tweet">Tweet: </label>
+        <textarea id="tweet" name="tweet" rows="4" cols="50" maxlength="280" required></textarea><br><br>
+        
+        <button type="submit" class="btn btn-primary">Post Tweet</button>
+    </form>
+    @* <div class="tweet-form-container">
+        <div class="user-avatar">
+            <!-- Put the user's avatar image here -->
+        </div>
+        <div class="tweet-input-container">
+            <input type="text" id="username" name="username" value="@User.Identity.Name" readonly class="hidden-username">
+            <textarea id="tweet" name="tweet" rows="4" cols="50" maxlength="280" required placeholder="What's happening?" class="tweet-input"></textarea>
+            <div class="tweet-action-buttons">
+                <button type="submit" class="tweet-submit-btn">Tweet</button>
+            </div>
+        </div>
+    </div> *@
+
+}
+else
+{
+    <p>You need to <a href="/Identity/Account/Login">login</a> to post tweets.</p>
 }
 
-/* Set a background color */
-body {
-    background-color: #f5f8fa;
-    font-family: Arial, sans-serif;
-}
+@* <h1>Recent Tweets</h1> *@
 
-li {
-    list-style-type: none;
-}
-
-/* Create a container for the tweet box */
-.container {
-    max-width: 600px;
-    margin: 20px auto;
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Style the header */
-h1 {
-    font-size: 24px;
-    margin-bottom: 10px;
-}
-
-/* Style the form elements */
-form label {
-    font-size: 16px;
-    font-weight: bold;
-    margin-bottom: 5px;
-    display: block;
-}
-
-form input[type="text"],
-form textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-bottom: 15px;
-}
-
-form textarea {
-    resize: vertical;
-}
-
-form input[type="submit"] {
-    background-color: #1da1f2;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-form input[type="submit"]:hover {
-    background-color: #0c85d0;
-}
-
-/* Style links to resemble Twitter's blue color */
-a {
-    color: #1da1f2;
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
-@* /* Style the tweet content */
-.tweet {
-    border-bottom: 1px solid #ccc;
-    padding: 15px 0;
-} *@
-
-</style>
-
-
-    @if (SignInManager.IsSignedIn(User))
-    {
-        <h1>Create Tweet</h1>
-        @* <form action="@Url.Action("Create", "Home")" method="post"> *@
-        <form id="tweetCreationForm" method="post" asp-controller="Home" asp-action="Create">
-            <label for="username">Username: </label>
-            <input type="text" id="username" name="username" value="@User.Identity.Name" readonly><br><br>
-            
-            <label for="tweet">Tweet: </label>
-            <textarea id="tweet" name="tweet" rows="4" cols="50" maxlength="280" required></textarea><br><br>
-            
-            <button type="submit" class="btn btn-primary">Post Tweet</button>
-        </form>
+<ul id="tweetFeed">
+    @{
+        var TopLevelTweets = Model.Where(t => t.ParentTweetId == null);
     }
-    else
+    @foreach (var tweet in TopLevelTweets)
     {
-        <p>You need to <a href="/Identity/Account/Login">login</a> to post tweets.</p>
+        <partial name="_TweetPartial" model="@tweet" />
     }
-
-    <h1>Recent Tweets</h1>
-   
-        <ul id="tweetFeed">
-            @{
-                var TopLevelTweets = Model.Where(t => t.ParentTweetId == null);
-            }
-            @foreach (var tweet in TopLevelTweets)
-            {
-                <div class="container">
-                    <li>
-                        <a asp-controller="User" asp-action="Index" asp-route-id="@tweet.User.Id">@tweet.Username:</a>  
-                        @tweet.Username: @tweet.TweetContent - @tweet.CreatedAt <br>
-                        @* <p>@tweet.Likes.Count Likes</p> *@
-                        <span class="likes-count">
-                            <a asp-controller="Tweet" asp-action="ShowLikes" asp-route-id="@tweet.Id">
-                                # of likes : <span class="actual-count">@tweet.Likes.Count</span>
-                            </a>
-                        </span>
-
-                        @if(tweet.Likes.Any(l => l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) == false)
-                        {
-                            <form method="post" asp-action="Like" asp-controller="Tweet" class="like-form">
-                                <input type="hidden" name="tweetId" value="@tweet.Id" />
-                                <button type="submit">Like</button>
-                            </form>
-                        }
-                        else
-                        {
-                            <form method="post" asp-action="Unlike" asp-controller="Tweet" class="unlike-form">
-                                <input type="hidden" name="tweetId" value="@tweet.Id" />
-                                <button type="submit">Unlike</button>
-                            </form>
-                        }
-
-                        @* @foreach(var reply in tweet.Replies)
-                        {
-                            <div class="container">
-                                <li>
-                                    <a asp-controller="User" asp-action="Index" asp-route-id="@reply.User.Id">@reply.Username:</a>
-                                    @reply.Username: @reply.TweetContent - @reply.CreatedAt <br>
-                                    <p>@reply.Likes.Count Likes</p>
-                                    <a asp-controller="Tweet" asp-action="ShowLikes" asp-route-id="@reply.Id">
-                                        # of likes : @reply.Likes.Count.
-                                    </a>
-
-                                    @if (reply.Likes.Any(l => l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) == false)
-                                    {
-                                        <form method="post" asp-action="Like" asp-controller="Tweet">
-                                            <input type="hidden" name="tweetId" value="@reply.Id" />
-                                            <button type="submit">Like</button>
-                                        </form>
-                                    }
-                                    else
-                                    {
-                                        <form method="post" asp-action="Unlike" asp-controller="Tweet">
-                                            <input type="hidden" name="tweetId" value="@reply.Id" />
-                                            <button type="submit">Unlike</button>
-                                        </form>
-                                    }
-                                </li>
-                            </div>
-                        } *@
-
-                        <h1>Reply</h1>
-                        <form method="post" asp-action="Reply" asp-controller="Tweet">
-                            <input type="hidden" name="ParentTweetId" value="@tweet.Id" />
-                            <textarea name="Content"></textarea>
-                            <button type="submit">Reply</button>
-                        </form>
-
-                    </li>
-                </div>
-            }
-        </ul>
+</ul>

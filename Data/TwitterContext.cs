@@ -9,13 +9,14 @@ namespace TwitterClone.Data
         {
         }
 
-        // public DbSet<Tweet> Tweets { get; set; }
         public DbSet<Tweet> Tweets { get; set; }
         public DbSet<UserFollower> UserFollowers { get; set; }
         public DbSet<TweetLike> TweetLikes { get; set; }
         public DbSet<Hashtag> Hashtags { get; set; }
         public DbSet<TweetHashtag> TweetHashtags { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<TweetBookmark> TweetBookmarks { get; set; }
+        public DbSet<Retweet> Retweets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -86,6 +87,34 @@ namespace TwitterClone.Data
                 .WithMany(u => u.ReceivedMessages)
                 .HasForeignKey(m => m.RecipientId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            //bookmarks
+            builder.Entity<TweetBookmark>()
+                .HasKey(tb => new { tb.UserId, tb.TweetId });
+
+            builder.Entity<TweetBookmark>()
+                .HasOne(tb => tb.User)
+                .WithMany(u => u.BookmarkedTweets)
+                .HasForeignKey(tb => tb.UserId);
+
+            builder.Entity<TweetBookmark>()
+                .HasOne(tb => tb.Tweet)
+                .WithMany(t => t.Bookmarks)
+                .HasForeignKey(tb => tb.TweetId);
+
+            //retweets
+            builder.Entity<Retweet>()
+                .HasKey(r => new { r.UserId, r.TweetId });
+
+            builder.Entity<Retweet>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Retweets)
+                .HasForeignKey(r => r.UserId);
+
+            builder.Entity<Retweet>()
+                .HasOne(r => r.Tweet)
+                .WithMany(t => t.Retweets)
+                .HasForeignKey(r => r.TweetId);
         }
     }
 }

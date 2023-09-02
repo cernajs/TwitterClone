@@ -17,6 +17,7 @@ using TwitterClone.SD;
 
 namespace TwitterClone.Controllers;
 
+//[ApiController]
 [Authorize]
 public class ChatController : Controller
 {
@@ -42,26 +43,38 @@ public class ChatController : Controller
         var currentUser = await _userManager.GetUserAsync(User);
         ViewBag.CurrentUserId = currentUser.Id;
         ViewBag.OtherUserId = id;
-        return View();
+        ViewBag.CurrentUserName = currentUser.UserName;
+
+        var messages = await _tweetRepo.ChatMessages
+            .Where(m => (m.SenderId == currentUser.Id && m.RecipientId == id) ||
+                        (m.SenderId == id && m.RecipientId == currentUser.Id))
+            .Include(m => m.Sender)
+            .OrderBy(m => m.Timestamp)
+            .ToListAsync();
+
+        return View(messages);
     }
 
-    [HttpPost]
-    public async Task<IActionResult> SendMessage(string recipientId, string content)
+    [HttpPost("api/messages")]
+    public async Task<IActionResult> CreateMessage([FromBody] ChatMessageDto chatMessageDto)
     {
+        //var senderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var sender = await _userManager.GetUserAsync(User);
         if (sender == null) return Challenge();  // Not logged in
+
+        //Console.WriteLine("recipient: " + chatMessageDto.RecipientId + " content: " + chatMessageDto.Content);
 
         var message = new ChatMessage
         {
             SenderId = sender.Id,
-            RecipientId = recipientId,
-            Content = content,
-            Timestamp = DateTime.UtcNow
+            RecipientId = chatMessageDto.RecipientId,
+            Content = chatMessageDto.Content,
+            Timestamp = DateTime.Now
         };
 
         _tweetRepo.ChatMessages.Add(message);
         await _tweetRepo.SaveChangesAsync();
 
-        return RedirectToAction("Index");
+        return Ok(new { Success = true });
     }
 }

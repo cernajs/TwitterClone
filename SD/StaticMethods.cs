@@ -15,7 +15,7 @@ public static class StaticMethods
             if (words[i].StartsWith("#"))
             {
                 var hashtag = words[i].Substring(1);
-                words[i] = $"<a href=\"/Home/Search?searchQuery={hashtag}\">{words[i]}</a>";
+                words[i] = $"<a href=\"/Home/Search?searchQuery=%23{hashtag}\">{words[i]}</a>";
             }
         }
         return string.Join(' ', words);

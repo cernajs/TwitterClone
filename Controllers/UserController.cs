@@ -1,11 +1,16 @@
+using System.Security.AccessControl;
+using System.Net.Http;
 using Internal;
 using System.Net;
-
 using System;
 using Microsoft.AspNetCore.Identity;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+
+
 using TwitterClone.Data;
 using TwitterClone.Models;
 
@@ -16,12 +21,14 @@ public class UserController : Controller
     private readonly ILogger<HomeController> _logger;
     private readonly TwitterContext _tweetRepo;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
 
-    public UserController(ILogger<HomeController> logger, TwitterContext db, UserManager<ApplicationUser> userManager)
+    public UserController(ILogger<HomeController> logger, TwitterContext db, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
     {
         _logger = logger;
         _tweetRepo = db;
         _userManager = userManager;
+        _signInManager = signInManager;
     }
 
     public async Task<IActionResult> Index(string id)
@@ -29,6 +36,7 @@ public class UserController : Controller
         var user = await _tweetRepo.Users
                 .Include(u => u.Followers)
                 .Include(u => u.Following)
+                .Include(u => u.Retweets)
                 .Include(u => u.Tweets)
                     .ThenInclude(t => t.Likes)
                 .Include(u => u.LikedTweets).FirstOrDefaultAsync(u => u.Id == id);
@@ -72,9 +80,6 @@ public class UserController : Controller
             FollowerId = currentUser.Id,
             FollowingId = userIdToFollow
         };
-
-        // currentUser.Following.Add(userFollower);
-        // userToFollow.Followers.Add(userFollower);
 
         _tweetRepo.UserFollowers.Add(userFollower);
         await _tweetRepo.SaveChangesAsync();
@@ -145,10 +150,55 @@ public class UserController : Controller
         return View(users);
     }
 
+    [HttpPost]
+    public async Task<IActionResult> EditProfile([FromBody] EditProfileViewModel model)
+    {
+        Console.WriteLine("EditProfile " + model.Id + " " + model.UserName + " " + model.Email);
+        if (ModelState.IsValid)
+        {
+            var user = await _userManager.FindByIdAsync(model.Id);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
 
-        
+            var existingUser = await _userManager.FindByEmailAsync(model.Email);
+            if (existingUser != null && existingUser.Id != model.Id)
+            {
+                return BadRequest("Email already exists.");
+            }
 
+            var tweets = await _tweetRepo.Tweets.Where(t => t.UserId == model.Id).ToListAsync();
+            foreach (var tweet in tweets)
+            {
+                tweet.Username = model.UserName;
+            }
 
+            user.UserName = model.UserName;
+            user.Email = model.Email;
 
-    
+            await _tweetRepo.SaveChangesAsync();
+
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                // sign-out the user first
+                await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+
+                // get any new claims that have been added to the user
+                user = await _userManager.GetUserAsync(HttpContext.User);
+                
+                // sign user back in
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                
+                return Ok(new { Success = true });
+            }
+            else
+            {
+                return BadRequest(result.Errors);
+            }
+        }
+        return BadRequest(ModelState);
+    }
+
 }

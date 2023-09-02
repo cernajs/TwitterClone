@@ -1,7 +1,10 @@
+using System.Net;
 using TwitterClone.Hubs;
 using TwitterClone.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.CookiePolicy;
 // using tt.Areas.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +18,12 @@ builder.Services.AddScoped<ITweetRetrievalStrategy, GetAllTweets>();
 builder.Services.AddDefaultIdentity<ApplicationUser>()
     .AddEntityFrameworkStores<TwitterContext>();
 builder.Services.AddSignalR();
+
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.CheckConsentNeeded = context => true;
+    options.MinimumSameSitePolicy =  SameSiteMode.Lax;
+});
 
 var app = builder.Build();
 
@@ -32,6 +41,13 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication(); 
 app.UseAuthorization();
+
+app.UseCookiePolicy( new CookiePolicyOptions
+{
+    MinimumSameSitePolicy = SameSiteMode.Lax,
+    HttpOnly = HttpOnlyPolicy.None,
+    Secure = CookieSecurePolicy.None,
+});
 
 app.MapControllerRoute(
     name: "default",

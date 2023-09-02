@@ -1,5 +1,3 @@
-//using EntityFrameworkCore.InMemory;
-//using System.Data.Entity.Core;
 using System.ComponentModel.DataAnnotations;
 
 namespace TwitterClone.Data;
@@ -16,6 +14,8 @@ public class Tweet
     //[MaxLength(280)]
     public string TweetContent { get; set; }
     public DateTime CreatedAt { get; set; }
+
+    bool retweet = false;
 
     public override string ToString()
     {
@@ -38,5 +38,9 @@ public class Tweet
     public virtual ICollection<Tweet> Replies { get; set; } = new List<Tweet>();
 
     public virtual ICollection<TweetHashtag> TweetHashtags { get; set; } = new List<TweetHashtag>();
+
+    public virtual ICollection<TweetBookmark> Bookmarks { get; set; } = new List<TweetBookmark>();
+
+    public virtual ICollection<Retweet> Retweets { get; set; } = new List<Retweet>();
 
 }

@@ -64,12 +64,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19Mb2dpblBhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/cernajs/dev/tt/Views/Shared/_TweetPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19Ud2VldFBhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/cernajs/dev/tt/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvU2hhcmVkL19WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/cernajs/dev/tt/Views/Tweet/ShowLikes.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVHdlZXQvU2hvd0xpa2VzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/cernajs/dev/tt/Views/Tweet/ViewReplies.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvVHdlZXQvVmlld1JlcGxpZXMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/cernajs/dev/tt/Views/User/Index.cshtml]

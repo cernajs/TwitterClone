@@ -13,6 +13,7 @@ using TwitterClone.Models;
 using TwitterClone.Hubs;
 using TwitterClone.SD;
 
+
 namespace TwitterClone.Controllers;
 
 public class HomeController : Controller
@@ -38,12 +39,16 @@ public class HomeController : Controller
     public async Task<IActionResult> Index()
     {
         //retreive tweets by given strategy
-        var tweets = await _viewStrategy.GetTweetsAsync(userId : null);
+        //var tweets = await _viewStrategy.GetTweetsAsync(userId : null);
 
-        // var tweets = await _tweetRepo.Tweets
-        //     .Include(t => t.User)
-        //     .Include(t => t.Likes)
-        //     .Include(t => t.Replies).ToListAsync();
+        var tweets = await _tweetRepo.Tweets
+            .Include(t => t.User)
+            .Include(t => t.Likes)
+            .Include(t => t.Bookmarks)
+            .Include(t => t.Replies)
+            .Include(t => t.Retweets)
+            .Include(t => t.Replies).ToListAsync();
+            
         return View(tweets);
     }
 
@@ -66,6 +71,7 @@ public class HomeController : Controller
         if (!string.IsNullOrEmpty(searchQuery)) {
             if (searchQuery.StartsWith("#"))
             {
+                Console.WriteLine("searching by hashtag");
                 searchStrategy = new HashtagSearch();
             }
             else
@@ -86,7 +92,7 @@ public class HomeController : Controller
     public async Task<IActionResult> Create(string username, string tweet)
     {
         Console.WriteLine("tweet is :" + tweet);
-        // Get the logged-in user.
+
         var user = await _userManager.GetUserAsync(User);
 
         // Check if the user is logged in and tweet content is provided.
@@ -97,22 +103,12 @@ public class HomeController : Controller
 
         MatchCollection matches = Regex.Matches(tweet, @"#\w+");
         List<string> hashtags = matches.Cast<Match>().Select(match => match.Value).ToList();
-
-        if(hashtags.Count != 0)
+        
+        if(hashtags.Count != 0) 
         {
             tweet = StaticMethods.ConvertToHtmlWithClickableHashtags(tweet);
-            foreach(var hashtag in hashtags)
-            {
-                Console.WriteLine($"hashtag registered : {hashtag}");
-                var newHashtag = new Hashtag
-                {
-                    Tag = hashtag
-                };
-                _tweetRepo.Hashtags.Add(newHashtag);
-            }
         }
 
-        // Create and save the new tweet.
         var newTweet = new Tweet
         { 
             UserId = user.Id, 
@@ -123,7 +119,36 @@ public class HomeController : Controller
         };
 
         _tweetRepo.Tweets.Add(newTweet);
-        _tweetRepo.SaveChanges();
+        //_tweetRepo.SaveChanges();
+
+        
+
+        if(hashtags.Count != 0)
+        {
+            
+            var tweetHashtags = new List<TweetHashtag>();
+            foreach(var hashtag in hashtags)
+            {
+                
+                var newHashtag = new Hashtag
+                {
+                    Tag = hashtag.Substring(1)
+                };
+                _tweetRepo.Hashtags.Add(newHashtag);
+
+
+                var newTweetHashtag = new TweetHashtag
+                {
+                    TweetId = newTweet.Id,
+                    HashtagId = newHashtag.Id
+                };
+                tweetHashtags.Add(newTweetHashtag);
+            }
+            _tweetRepo.TweetHashtags.AddRange(tweetHashtags);
+            
+        }
+
+        await _tweetRepo.SaveChangesAsync();
 
         await NotifyFollowersOfNewTweet(user.Id, "New tweet posted!");
 

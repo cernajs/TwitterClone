@@ -88,13 +88,6 @@ public class TweetController : Controller
             return Json(new { success = true, action = "liked" });
         }
 
-        // string referer = Request.Headers["Referer"].ToString();
-        // if (!string.IsNullOrEmpty(referer))
-        // {
-        //     return Redirect(referer);
-        // }
-
-        //return RedirectToAction("Index", "Home");
         return Json(new { success = false, action = "like failed" });
     }
 
@@ -104,7 +97,6 @@ public class TweetController : Controller
         var tweet = _tweetRepo.Tweets.FirstOrDefault(t => t.Id == tweetId);
         if (tweet == null)
         {
-            //return NotFound();
             return Json(new { success = false, action = "unlike failed" });
         }
 
@@ -114,35 +106,17 @@ public class TweetController : Controller
 
         if (existingLike == null)
         {
-            //return NotFound();
             return Json(new { success = false, action = "unlike failed" });
         }
 
         _tweetRepo.TweetLikes.Remove(existingLike);
         await _tweetRepo.SaveChangesAsync();
 
-        // string referer = Request.Headers["Referer"].ToString();
-        // if (!string.IsNullOrEmpty(referer))
-        // {
-        //     return Redirect(referer);
-        // }
-
-        // return RedirectToAction("Index", "Home");
-
         return Json(new { success = true, action = "unliked" });
     }
 
     public async Task<IActionResult> ShowLikes(int id)
     {
-        // <a asp-controller="Tweet" asp-action="ShowLikes" asp-route-id="@tweet.Id">
-        //      # of likes : @tweet.Likes.Count
-        // </a>
-
-        // var tweet = await _tweetRepo.Tweets
-        //     .Include(t => t.Likes)
-        //         .ThenInclude(l => l.User)
-        //     .FirstOrDefaultAsync(t => t.Id == id);
-
         var likers = await _tweetRepo.Tweets
             .Where(t => t.Id == id)
             .SelectMany(t => t.Likes.Select(l => l.User))
@@ -162,6 +136,7 @@ public class TweetController : Controller
     [HttpPost]
     public async Task<IActionResult> Reply(int ParentTweetId, string Content)
     {
+        Console.WriteLine("ParentTweetId is :" + ParentTweetId + " Content is :" + Content);
         if (string.IsNullOrEmpty(Content))
         {
             return RedirectToAction("Index", "Home");
@@ -178,6 +153,8 @@ public class TweetController : Controller
             return NotFound();
         }
 
+        Console.WriteLine("parentTweet is :" + ParentTweetId + " Content is :" + Content);
+
         var newTweet = new Tweet
         {
             UserId = currentUser.Id,
@@ -191,6 +168,122 @@ public class TweetController : Controller
         _tweetRepo.Tweets.Add(newTweet);
         _tweetRepo.SaveChanges();
 
+        //return RedirectToAction("Index", "Home");
+        string referer = Request.Headers["Referer"].ToString();
+        if (!string.IsNullOrEmpty(referer))
+        {
+            return Redirect(referer);
+        }
+
         return RedirectToAction("Index", "Home");
+    }
+
+
+    public async Task<IActionResult> ViewReplies(int id)
+    {
+
+        var replies = await _tweetRepo.Tweets
+                                        .Include(t => t.ParentTweet)
+                                        .Where(t => t.ParentTweetId == id).ToListAsync();
+
+        if (replies == null)
+        {
+            return NotFound();
+        }
+
+        replies ??= new List<Tweet>();
+
+        return View(replies);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Bookmark(int tweetId, bool isBookmarked)
+    {
+        var currentUser = await _userManager.GetUserAsync(User);
+
+        if(isBookmarked)
+        {
+            if(_tweetRepo.TweetBookmarks.Any(tb => tb.UserId == currentUser.Id && tb.TweetId == tweetId))
+            {
+                return BadRequest("Tweet already bookmarked.");
+            }
+
+            var tweetBookmark = new TweetBookmark
+            {
+                UserId = currentUser.Id,
+                TweetId = tweetId
+            };
+
+            _tweetRepo.TweetBookmarks.Add(tweetBookmark);
+        }
+        else
+        {
+            var tweetBookmark = await _tweetRepo.TweetBookmarks
+                .Where(tb => tb.UserId == currentUser.Id && tb.TweetId == tweetId)
+                .FirstOrDefaultAsync();
+
+            if(tweetBookmark == null)
+            {
+                return BadRequest("Tweet not bookmarked.");
+            }
+
+            if (tweetBookmark != null)
+            {
+                _tweetRepo.TweetBookmarks.Remove(tweetBookmark);
+            }
+        }
+        await _tweetRepo.SaveChangesAsync();
+
+        return Ok(new { Success = true });
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Retweet(int tweetId, bool isRetweet)
+    {
+        Console.WriteLine("Retweet " + tweetId);
+        var currentUser = await _userManager.GetUserAsync(User);
+
+        var tweet = await _tweetRepo.Tweets
+            .FirstOrDefaultAsync(t => t.Id == tweetId);
+
+        if (tweet == null)
+        {
+            return NotFound();
+        }
+
+        if(isRetweet)
+        {
+            if(_tweetRepo.Retweets.Any(r => r.UserId == currentUser.Id && r.TweetId == tweetId))
+            {
+                return BadRequest("Tweet already retweeted.");
+            }
+            var retweet = new Retweet {
+                UserId = currentUser.Id,
+                TweetId = tweetId,
+                RetweetTime = DateTime.Now
+            };
+
+            _tweetRepo.Retweets.Add(retweet);
+        }
+        else
+        {
+            var retweet = await _tweetRepo.Retweets
+                .Where(r => r.UserId == currentUser.Id && r.TweetId == tweetId)
+                .FirstOrDefaultAsync();
+
+            if(retweet == null)
+            {
+                return BadRequest("Tweet not retweeted.");
+            }
+
+            if (retweet != null)
+            {
+                _tweetRepo.Retweets.Remove(retweet);
+            }
+        }
+
+        await _tweetRepo.SaveChangesAsync();
+
+        return Ok(new { Success = true });
     }
 }
