@@ -1,0 +1,10 @@
+@model List<Tweet>
+
+<ul id="tweetFeed">
+    @foreach(var tweet in Model)
+    {
+        <li>
+            <partial name="_TweetPartial" model="@tweet" />
+        </li>
+    }
+</ul>

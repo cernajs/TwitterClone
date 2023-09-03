@@ -5,6 +5,10 @@
       "PackagePath": "staticwebassets/tt.bundle.scp.css"
     },
     {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/.DS_Store",
+      "PackagePath": "staticwebassets/.DS_Store"
+    },
+    {
       "Id": "/Users/cernajs/dev/tt/wwwroot/css/home.css",
       "PackagePath": "staticwebassets/css/home.css"
     },
@@ -259,6 +263,10 @@
     {
       "Id": "/Users/cernajs/dev/tt/wwwroot/lib/jquery/dist/jquery.min.map",
       "PackagePath": "staticwebassets/lib/jquery/dist/jquery.min.map"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/uploads/temp.jpeg",
+      "PackagePath": "staticwebassets/uploads/temp.jpeg"
     },
     {
       "Id": "obj/Debug/net7.0/staticwebassets/msbuild.build.tt.props",

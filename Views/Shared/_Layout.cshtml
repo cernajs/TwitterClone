@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@using TwitterClone.Models
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -7,6 +12,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/tt.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/tweetView.css" asp-append-version="true" />
     <style>
         .col-md-3, .col-md-6 {
             border-left: 1px solid #e1e4e8;
@@ -48,6 +54,11 @@
 
     </style>
 </head>
+
+@{
+    var currentUser = await UserManager.GetUserAsync(User);
+}
+
 <body>
     <div class="container-fluid">
         <div class="row">
@@ -59,13 +70,16 @@
                         <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Home</a>
                     </div>
                     <div class="mb-3">
-                        <a href="#" class="btn btn-primary">Explore</a>
+                        <a asp-controller="Home" asp-action="Popular" class="btn btn-primary">Popular</a>
                     </div>
                     <div class="mb-3">
-                        <a href="#" class="btn btn-primary">Notifications</a>
+                        <a id="notificationCount" asp-controller="Home" asp-action="ShowNotifications" class="btn btn-primary">Notifications</a>
                     </div>
                     <div class="mb-3">
-                        <a href="#" class="btn btn-primary">Messages</a>
+                        <a asp-controller="Chat" asp-action="Index" class="btn btn-primary">Messages</a>
+                    </div>
+                    <div class="mb-3">
+                        <a asp-controller="User" asp-action="ShowBookmarks" class="btn btn-primary">Bookmarks</a>
                     </div>
                 </div>
             </aside>
@@ -88,16 +102,17 @@
                     </form>
 
                     <h5>Trending</h5>
-                    <ul>
-                        <li>#Topic1</li>
+                    <ul id="trendingTopicsList">
+                        <!-- Trending topics will be populated here -->
+                        @* <li>#Topic1</li>
                         <li>#Topic2</li>
-                        <li>#Topic3</li>
+                        <li>#Topic3</li> *@
                     </ul>
                     <h5 class="mt-3">Who to follow</h5>
-                    <ul>
-                        <li>User1</li>
+                    <ul ul id="toFollow">
+                        @* <li>User1</li>
                         <li>User2</li>
-                        <li>User3</li>
+                        <li>User3</li> *@
                     </ul>
                 </div>
             </aside>

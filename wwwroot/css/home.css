@@ -1,0 +1,94 @@
+body, h1, h2, p, form {
+    margin: 0;
+    padding: 0;
+}
+
+/* Set a background color */
+body {
+    background-color: #ffffff;
+    font-family: Arial, sans-serif;
+}
+
+li {
+    list-style-type: none;
+}
+
+/* Create a container for the tweet box */
+.container {
+    max-width: 600px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Style the header */
+h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+ /* Style the form elements */
+form label {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+}
+
+form input[type="text"],
+form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+form textarea {
+    resize: vertical;
+}
+
+form input[type="submit"] {
+    background-color: #1da1f2;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+form input[type="submit"]:hover {
+    background-color: #0c85d0;
+} 
+
+/* Style links to resemble Twitter's blue color */
+a {
+    color: #1da1f2;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+
+.action-btn {
+    padding: 8px 12px;
+    background-color: #1DA1F2;
+    color: white;
+    border-radius: 21px;
+    border: none;
+    cursor: pointer;
+}
+
+
+.button-container-flex {
+    display: flex;
+}
+
+.like-form, .unlike-form {
+    display: inline-block;
+}

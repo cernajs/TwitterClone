@@ -66,37 +66,22 @@
 
 @if (SignInManager.IsSignedIn(User))
 {
-    @* <h1>Create Tweet</h1> *@
-    @* <form action="@Url.Action("Create", "Home")" method="post"> *@
-    <form id="tweetCreationForm" method="post" asp-controller="Home" asp-action="Create">
-        <label for="username">Username: </label>
-        <input type="text" id="username" name="username" value="@User.Identity.Name" readonly><br><br>
-        
-        <label for="tweet">Tweet: </label>
-        <textarea id="tweet" name="tweet" rows="4" cols="50" maxlength="280" required></textarea><br><br>
-        
-        <button type="submit" class="btn btn-primary">Post Tweet</button>
-    </form>
-    @* <div class="tweet-form-container">
-        <div class="user-avatar">
-            <!-- Put the user's avatar image here -->
-        </div>
-        <div class="tweet-input-container">
-            <input type="text" id="username" name="username" value="@User.Identity.Name" readonly class="hidden-username">
+    <div class="tweet-form-container">
+        <form id="tweetCreationForm" method="post" asp-controller="Home" asp-action="Create">
+            <input type="text" id="username" name="username" value="@User.Identity.Name" hidden><br><br>
+            
             <textarea id="tweet" name="tweet" rows="4" cols="50" maxlength="280" required placeholder="What's happening?" class="tweet-input"></textarea>
+            
             <div class="tweet-action-buttons">
                 <button type="submit" class="tweet-submit-btn">Tweet</button>
             </div>
-        </div>
-    </div> *@
-
+        </form>
+    </div>
 }
 else
 {
     <p>You need to <a href="/Identity/Account/Login">login</a> to post tweets.</p>
 }
-
-@* <h1>Recent Tweets</h1> *@
 
 <ul id="tweetFeed">
     @{

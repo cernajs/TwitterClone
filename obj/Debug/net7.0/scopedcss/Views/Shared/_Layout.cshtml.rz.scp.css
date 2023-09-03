@@ -45,3 +45,7 @@ button.accept-policy[b-ug0799pvl0] {
   white-space: nowrap;
   line-height: 60px;
 }
+
+html[b-ug0799pvl0] {
+  background-color: #ffffff;
+}

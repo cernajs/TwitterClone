@@ -17,6 +17,7 @@ namespace TwitterClone.Data
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<TweetBookmark> TweetBookmarks { get; set; }
         public DbSet<Retweet> Retweets { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -115,6 +116,23 @@ namespace TwitterClone.Data
                 .HasOne(r => r.Tweet)
                 .WithMany(t => t.Retweets)
                 .HasForeignKey(r => r.TweetId);
+
+            //notifications
+            builder.Entity<Notification>()
+                .HasKey(n => new { n.UserId, n.TweetId });
+
+            builder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany()
+                .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Notification>()
+                .HasOne(n => n.Tweet)
+                .WithMany()
+                .HasForeignKey(n => n.TweetId)
+                .OnDelete(DeleteBehavior.Restrict);
+        
         }
     }
 }

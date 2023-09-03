@@ -45,7 +45,9 @@
                     <button type="submit">Unfollow</button>
                 </form>
               }
-              <a asp-controller="Chat" asp-action="Index" asp-route-id="@Model.Id" class="action-btn">Chat</a>
+              <a asp-controller="Chat" asp-action="ChatWithSpecificUser" asp-route-id="@Model.Id" class="action-btn">Chat</a>
+              @*  [HttpGet("api/messages/{id}")] *@
+              @* <a asp-controller="api" asp-action="messages" asp-route-id="@Model.Id" class="action-btn">Chat</a> *@
             }
         </div>
     </div>

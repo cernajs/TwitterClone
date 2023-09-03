@@ -37,9 +37,12 @@ public class UserController : Controller
                 .Include(u => u.Followers)
                 .Include(u => u.Following)
                 .Include(u => u.Retweets)
+                    .ThenInclude(r => r.Tweet)
+                        .ThenInclude(t => t.User)
                 .Include(u => u.Tweets)
                     .ThenInclude(t => t.Likes)
                 .Include(u => u.LikedTweets).FirstOrDefaultAsync(u => u.Id == id);
+
         if (user == null)
         {
             return NotFound();
@@ -201,4 +204,29 @@ public class UserController : Controller
         return BadRequest(ModelState);
     }
 
+    public async Task<IActionResult> ShowBookmarks()
+    {
+        var id = _userManager.GetUserId(User); 
+
+        var bookmarks = await _tweetRepo.TweetBookmarks
+            .Where(b => b.UserId == id)
+            .Include(b => b.Tweet)
+            .ThenInclude(t => t.User)
+            .Include(b => b.Tweet.Likes)
+            .Include(b => b.Tweet.Bookmarks)
+            .Include(b => b.Tweet.Retweets)
+            .Include(b => b.Tweet.Replies)
+            .Select(b => b.Tweet)
+            .ToListAsync();
+
+
+        if (bookmarks == null)
+        {
+            return NotFound();
+        }
+
+        //bookmarks ??= new List<Tweet>();
+
+        return View(bookmarks);
+    }
 }

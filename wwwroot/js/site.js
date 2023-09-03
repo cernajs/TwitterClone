@@ -3,27 +3,45 @@
             const feed = $("#tweetFeed");
 
             const tweetHtml = `
-                <div class="container">
-                    <li>
-                        <a href="/User/Index/${userId}">${username}:</a>
-                        ${username}: ${content} - ${createdAt} <br>
-                        <span class="likes-count">
-                            <a href="/Tweet/ShowLikes/${id}">
-                                # of likes : <span class="actual-count">${likesCount}</span>
-                            </a>
-                        </span>
-                        <form method="post" action="/Tweet/Like" class="like-form">
-                            <input type="hidden" name="tweetId" value="${id}" />
-                            <button type="submit">Like</button>
-                        </form>
-                        <h1>Reply</h1>
-                        <form method="post" action="/Tweet/Reply">
-                            <input type="hidden" name="ParentTweetId" value="${id}" />
-                            <textarea name="Content"></textarea>
-                            <button type="submit">Reply</button>
-                        </form>
-                    </li>
+            <div class="clickable-div tweet-wrap" data-tweet-id="@Model.Id">
+                <div class="tweet-header">
+                    <img src="avatar_url_here" alt="" class="avator">
+                    <div class="tweet-header-info">
+                        <a href="/User/Index/${userId}">${username}:</a> <span>${createdAt}</span>
+                        <p>${content}</p>
+                    </div>
                 </div>
+            
+                <div class="tweet-info-counts">
+                    <span class="likes">
+                        <a href="/Tweet/ShowLikes/${id}">
+                        # of likes : <span class="actual-count">${likesCount}</span>
+                        </a>
+                    </span>
+                </div>
+            
+                <div class="button-container-grid">
+                
+                <button type="submit" class="reply-button action-btn" data-tweet-id="${id}">Reply</button>
+
+                    <form method="post" action="/Tweet/Retweet" class="retweet-form">
+                        <input type="hidden" name="tweetId" value="${id}" />
+                        <button class="action-btn" type="submit">Retweet</button>
+                    </form>          
+
+                    <form method="post" action="/Tweet/Like" class="like-form">
+                        <input type="hidden" name="tweetId" value="${id}" />
+                        <button class="action-btn" type="submit">Like</button>
+                    </form>
+
+                    <form method="post" action="/Tweet/Bookmark" class="bookmark-form">
+                        <input type="hidden" name="tweetId" value="${id}" />
+                        <button class="action-btn" type="submit">Bookmark</button>
+                    </form>
+                
+                
+                </div>
+            </div>
             `;
 
             feed.prepend(tweetHtml);
@@ -46,12 +64,12 @@
 
         $(document).ready(function () {
 
-            $('#tweetFeed').on('submit', '.like-form', function(e) {
+            $(document).on('submit', '.like-form', function(e) {
                 e.preventDefault();
                 handleLikeUnlike($(this), true);
             });
 
-            $('#tweetFeed').on('submit', '.unlike-form', function(e) {
+            $(document).on('submit', '.unlike-form', function(e) {
                 e.preventDefault();
                 handleLikeUnlike($(this), false);
             });
@@ -126,6 +144,7 @@
 
         connection.on("ReceiveNotification", (message) => {
             alert(message);
+            updateNotificationCount();
         });
 
 
@@ -139,7 +158,33 @@
             addChatMessageToFeed(username, message);
         });
 
+        function updateNotificationCount() {
+            $.get("/api/getNotificationCount", function(data) {
+                $("#notificationCount").text("Notifications ("+data.notificationCount+")");
+            });
+        }
+        
+        $.get("/api/getTrendingTopics", function(data) {
+            if(data.length === 0) {
+                $("#trendingTopicsList").append("<li>No trending topics</li>");
+                return;
+            }
+            ///Home/Search?searchQuery=%23a
+            data.forEach(function(topic) {
+                $("#trendingTopicsList").append("<li>" + `<a href=\"Home/Search?searchQuery=%23${topic}\">` + "#" + topic + "<a>" + "</li>");
+            });
+        });
 
+        $.get("/api/getFollowSuggest", function(data) {
+            if(data.length === 0) {
+                $("#toFollow").append("<li>Noone to follow</li>");
+                return;
+            }
+            ///User/Index/a67709e6-37ab-4810-a91d-c6c075c5e003
+            data.forEach(function(user) {
+                $("#toFollow").append("<li>" + `<a href=\"/User/Index/${user.id}\">` + user.userName + "</a>" +"</li>");
+            });
+        });
 
 
         $("#sendChatButton").click(function() {
@@ -181,12 +226,13 @@
                                     <span class="timestamp">${getFormattedDateTime('Europe/Berlin')}</span>
                                 </div>`;
             document.getElementById("chatArea").innerHTML += messageElement;
+            document.getElementById("messageInput").value = "";
             connection.invoke("SendMessage", otherUserId, message).catch(function (err) {
                 return console.error(err.toString());
             });
 
             $.ajax({
-                url: "/api/messages",
+                url: "/Chat/CreateMessage",
                 type: "POST",
                 data: JSON.stringify({ RecipientId: otherUserId, Content: message }),
                 contentType: "application/json",
@@ -250,7 +296,12 @@
 
         $(".clickable-div").on("click", function () {
             const tweetId = $(this).data("tweet-id");
-            window.location.href = 'Tweet/ViewReplies/' + tweetId;
+            window.location.href = '/Tweet/ViewReplies/' + tweetId;
+        });
+
+        $(".chat").on("click", function () {
+            const chatId = $(this).data("tweet-id");
+            window.location.href = '/Chat/ChatWithSpecificUser/' + chatId;
         });
 
 

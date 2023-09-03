@@ -1,0 +1,131 @@
+
+body {
+    background: #ffffff;
+    font-family: 'Asap', sans-serif;
+    font-family: 'Roboto', sans-serif;
+  }
+  
+  /* Avatar Style */
+  .avator {
+    border-radius: 100px;
+    width: 48px;
+    margin-right: 15px;
+  }
+  
+  /* Main Tweet Container */
+
+  .tweet-wrap {
+    max-width: 100%;  /* Reduced width to fit inside #tweetFeed */
+    background: #fff;
+    margin: 0 auto;
+    padding: 30px;
+    border-bottom: 1px solid #e1e8ed;  /* Added a bottom border */
+  }
+
+  .tweet-wrap, #tweetFeed {
+    margin: 0;
+    padding: 0;
+  }
+
+  .tweet-wrap {
+    width: 100%;
+  }
+
+
+  /* Main Tweet Container */
+  #tweetFeed {
+    /* max-width: 600px; */
+    margin: 0 auto;
+    border-left: 1px solid #e1e8ed;
+    border-right: 1px solid #e1e8ed;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  
+  /* Tweet Header */
+  .tweet-header {
+    display: flex;
+    align-items: flex-start;
+    font-size: 14px;
+  }
+  
+  .tweet-header-info {
+    font-weight: bold;
+  }
+  
+  .tweet-header-info span {
+    color: #657786;
+    font-weight: normal;
+    margin-left: 5px;
+  }
+  
+  .tweet-header-info p {
+    font-weight: normal;
+    margin-top: 5px;
+  }
+  
+  /* Tweet Counts (likes, retweets etc.) */
+  .tweet-info-counts {
+    display: flex;
+    margin-left: 60px;
+    margin-top: 10px;
+  }
+  
+  .tweet-info-counts div {
+    display: flex;
+    margin-right: 20px;
+  }
+  
+  .tweet-info-counts div svg {
+    color: #657786;
+    margin-right: 10px;
+  }
+  
+  /* Button container */
+  .button-container-grid {
+    display: flex;
+    justify-content: end;
+    row-gap: 8px;
+    flex-wrap: nowrap;
+    margin-top: 20px;
+  }
+  
+  /* Button Style */
+  .action-btn {
+    padding: 10px;
+    background-color: #1da1f2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .action-btn:hover {
+    background-color: #0e76a8;
+  }
+  
+  /* Responsive Style */
+  @media screen and (max-width: 430px) {
+    body {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+    .tweet-header {
+      flex-direction: column;
+    }
+    .tweet-header img {
+      margin-bottom: 20px;
+    }
+    .tweet-header-info p {
+      margin-bottom: 30px;
+    }
+    .tweet-info-counts {
+      margin-left: 0;
+    }
+    .tweet-info-counts div {
+      margin-right: 10px;
+    }
+  }

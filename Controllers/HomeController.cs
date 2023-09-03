@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SignalR;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authorization;
 
 using TwitterClone.Data;
 using TwitterClone.Models;
@@ -23,16 +24,19 @@ public class HomeController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IHubContext<NotificationHub> _hubContext;
     private readonly ITweetRetrievalStrategy _viewStrategy;
+    private readonly IPopularTweetStrategy _popularTweetStrategy;
 
     public HomeController(ILogger<HomeController> logger, TwitterContext db,
                          UserManager<ApplicationUser> userManager, IHubContext<NotificationHub> hubContext,
-                         ITweetRetrievalStrategy viewStrategy)
+                         ITweetRetrievalStrategy viewStrategy,
+                         IPopularTweetStrategy popularTweetStrategy)
     {
         _logger = logger;
         _tweetRepo = db;
         _userManager = userManager;
         _hubContext = hubContext;
         _viewStrategy = viewStrategy;
+        _popularTweetStrategy = popularTweetStrategy;
     }
 
 
@@ -48,24 +52,17 @@ public class HomeController : Controller
             .Include(t => t.Replies)
             .Include(t => t.Retweets)
             .Include(t => t.Replies).ToListAsync();
-            
+
         return View(tweets);
     }
 
+    /// <summary>
+    ///     Search for tweets by username or hashtag depending on the search query.
+    /// </summary>
+    /// <param name="searchQuery"></param>
+    /// <returns></returns>
     public async Task<IActionResult> Search(string searchQuery)
     {
-        // var tweets = _tweetRepo.Tweets.Include(t => t.User).ToList();
-
-        // if (!string.IsNullOrEmpty(searchQuery))
-        // {
-        //     tweets = tweets.Where(tweet =>
-        //         tweet.Username.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-        //         tweet.TweetContent.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
-        //         .ToList();
-        // }
-
-        // return View("Index", tweets);
-
         ISearchStrategy searchStrategy;
 
         if (!string.IsNullOrEmpty(searchQuery)) {
@@ -95,7 +92,6 @@ public class HomeController : Controller
 
         var user = await _userManager.GetUserAsync(User);
 
-        // Check if the user is logged in and tweet content is provided.
         if(user == null || string.IsNullOrEmpty(tweet))
         {
             return RedirectToAction("Index", "Home");
@@ -150,34 +146,16 @@ public class HomeController : Controller
 
         await _tweetRepo.SaveChangesAsync();
 
-        await NotifyFollowersOfNewTweet(user.Id, "New tweet posted!");
+        await NotifyFollowersOfNewTweet(user.Id, "New tweet posted!", newTweet.Id);
 
                                                             //( id,         username,       content, createdAt,           likesCount,            userId,   isLikedByCurrentUser)
         await _hubContext.Clients.All.SendAsync("ReceiveTweet", newTweet.Id, user.UserName, tweet, DateTime.Now.ToString(), newTweet.Likes.Count, user.Id, false );
 
-        //return RedirectToAction("Index", "Home");
-        // CHANGE
-        return Json(new { success = true });
 
+        return Json(new { success = true });
     }
 
-
-    // public async Task SendNotification(string userId, string message)
-    // {
-    //     await Clients.User(userId).SendAsync("ReceiveNotification", message);
-    // }
-
-    // public async Task SendTweet(string username, string content, string createdAt)
-    // {
-    //     await Clients.All.SendAsync("ReceiveTweet", username, content, createdAt);
-    // }
-
-    // public async Task SendMessage(string user, string message)
-    // {
-    //     await Clients.All.SendAsync("ReceiveMessage", user, message);
-    // }
-
-    private async Task NotifyFollowersOfNewTweet(string userId, string message)
+    private async Task NotifyFollowersOfNewTweet(string userId, string message, int tweetId)
     {
         // Fetch all followers of the user.
         var followers = await _tweetRepo.UserFollowers
@@ -187,11 +165,84 @@ public class HomeController : Controller
 
         foreach(var follower in followers)
         {
+
+            var notification = new Notification
+            {
+                UserId = follower,
+                Message = message,
+                TweetId = tweetId,
+                Timestamp = DateTime.Now
+            };
+
+            _tweetRepo.Notifications.Add(notification);
+            await _tweetRepo.SaveChangesAsync();
+
             await _hubContext.Clients.User(follower).SendAsync("ReceiveNotification", message);
-            //await _hubContext.SendNotification(follower, message);
         }
     }
 
+    [Authorize]
+    public async Task<IActionResult> Popular() {
+        var popularTweets = await _popularTweetStrategy.GetTweetsAsync();
+
+        popularTweets ??= new List<Tweet>();
+
+        return View(popularTweets);
+    }
+
+    [HttpGet("api/getNotificationCount")]
+    public async Task<IActionResult> GetNotificationCount()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge();
+
+        var notificationCount = await _tweetRepo.Notifications
+            .Where(n => n.UserId == user.Id && !n.IsSeen)
+            .CountAsync();
+
+        return Json(new { notificationCount });
+    }
+
+    [Authorize]
+    public async Task<IActionResult> ShowNotifications()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Challenge();
+
+        var notifications = await _tweetRepo.Notifications
+            .Where(n => n.UserId == user.Id)
+            .OrderByDescending(n => n.Timestamp)
+            .ToListAsync();
+
+        return View(notifications);
+    }
+
+    [HttpGet("api/getTrendingTopics")]
+    public async Task<IActionResult> GetTrendingTopics()
+    {
+        var trendingTopics = await _tweetRepo.Hashtags
+            .OrderByDescending(h => h.TweetHashtags.Count)
+            .Take(3)
+            .Select(h => h.Tag)
+            .ToListAsync();
+
+        return Json(trendingTopics);
+    }
+
+    [HttpGet("/api/getFollowSuggest")]
+    public async Task<IActionResult> GetFollowSuggest()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Json(new List<ApplicationUser>());
+
+        var followSuggest = await _tweetRepo.Users
+            .Where(u => u.Id != user.Id)
+            .OrderBy(u => Guid.NewGuid())
+            .Take(3)
+            .ToListAsync();
+
+        return Json(followSuggest);
+    }
 
     public IActionResult Privacy()
     {

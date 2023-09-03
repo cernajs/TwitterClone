@@ -17,7 +17,6 @@ using TwitterClone.SD;
 
 namespace TwitterClone.Controllers;
 
-//[ApiController]
 [Authorize]
 public class ChatController : Controller
 {
@@ -38,8 +37,27 @@ public class ChatController : Controller
         _viewStrategy = viewStrategy;
     }
 
-    public async Task<IActionResult> Index(string id)
+    public async Task<IActionResult> Index()
     {
+        var currentUser = await _userManager.GetUserAsync(User);
+        var allChats = await _tweetRepo.ChatMessages
+            .Where(m => m.SenderId == currentUser.Id || m.RecipientId == currentUser.Id)
+            .GroupBy(m => m.SenderId == currentUser.Id ? m.RecipientId : m.SenderId)
+            .Select(g => new ChatViewModel {
+                RecieventName = g.Key == currentUser.Id ? g.FirstOrDefault().Sender.UserName : g.FirstOrDefault().Recipient.UserName,
+                ChatId = g.Key,
+                MostRecentMessage = g.OrderByDescending(m => m.Timestamp).FirstOrDefault()
+            })
+            .ToListAsync();
+
+        return View(allChats);
+    }
+
+
+   [ActionName("ChatWithSpecificUser")]
+    public async Task<IActionResult> ChatWithSpecificUserAsync(string id)
+    {
+        Console.WriteLine("in ChatWithSpecificUserAsync");
         var currentUser = await _userManager.GetUserAsync(User);
         ViewBag.CurrentUserId = currentUser.Id;
         ViewBag.OtherUserId = id;
@@ -52,10 +70,12 @@ public class ChatController : Controller
             .OrderBy(m => m.Timestamp)
             .ToListAsync();
 
+        Console.WriteLine("messages retrieved");
+
         return View(messages);
     }
 
-    [HttpPost("api/messages")]
+
     public async Task<IActionResult> CreateMessage([FromBody] ChatMessageDto chatMessageDto)
     {
         //var senderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
