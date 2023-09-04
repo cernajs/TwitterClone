@@ -16,6 +16,11 @@ builder.Services.AddDbContext<TwitterContext>(options => options.UseInMemoryData
 // strategy for retrieving tweets
 builder.Services.AddScoped<ITweetRetrievalStrategy, GetAllTweets>();
 builder.Services.AddScoped<IPopularTweetStrategy, PopularTweetStrategy>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ITweetService, TweetService>();
+builder.Services.AddScoped<IHashtagService, HashtagService>();
+
 builder.Services.AddDefaultIdentity<ApplicationUser>()
     .AddEntityFrameworkStores<TwitterContext>();
 builder.Services.AddSignalR();

@@ -1,47 +1,90 @@
-using Internal;
 using System;
 using Microsoft.AspNetCore.Identity;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authorization;
+
 using TwitterClone.Data;
 using TwitterClone.Models;
+using TwitterClone.Hubs;
+using TwitterClone.SD;
 
 namespace TwitterClone.Controllers;
 
+
 public class TweetController : Controller
 {
-    private readonly ILogger<HomeController> _logger;
     private readonly TwitterContext _tweetRepo;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IHubContext<NotificationHub> _hubContext;
+    private readonly IUserService _userService;
+    private readonly INotificationService _notificationService;
+    private readonly ITweetService _tweetService;
+    private readonly IHashtagService _hashtagService;
 
-    public TweetController(ILogger<HomeController> logger, TwitterContext db, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+    public TweetController(TwitterContext db,
+                            UserManager<ApplicationUser> userManager,
+                            SignInManager<ApplicationUser> signInManager,
+                            IHubContext<NotificationHub> hubContext,
+                            IUserService userService,
+                            INotificationService notificationService,
+                            ITweetService tweetService,
+                            IHashtagService hashtagService)
     {
-        _logger = logger;
         _tweetRepo = db;
         _userManager = userManager;
         _signInManager = signInManager;
+        _hubContext = hubContext;
+        _userService = userService;
+        _notificationService = notificationService;
+        _tweetService = tweetService;
+        _hashtagService = hashtagService;
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(string tweetContent)
+    [Authorize]
+    public async Task<IActionResult> Create(string username, string tweet)
     {
-        if (string.IsNullOrEmpty(tweetContent))
+
+        var user = await _userService.GetUserAsync(User);
+        if(user == null || string.IsNullOrEmpty(tweet))
         {
             return RedirectToAction("Index", "Home");
         }
 
-        var currentUser = await _userManager.GetUserAsync(User);
+        var (hashtags, tweetContent) = _hashtagService.ParseHashtags(tweet);
 
-        var newTweet = new Tweet { TweetContent = tweetContent, CreatedAt = DateTime.Now, User = currentUser };
-        _tweetRepo.Tweets.Add(newTweet);
-        _tweetRepo.SaveChanges();
+        var newTweet = await _tweetService.CreateTweetAsync(user, tweetContent);
 
-        return RedirectToAction("Index", "Home");
+        if(hashtags.Count != 0)
+        {
+            _hashtagService.CreateHashtagsAsync(hashtags, newTweet.Id);
+        }
+
+        await _notificationService.NotifyFollowersOfNewTweetAsync(user.Id, "New tweet posted!", newTweet.Id);
+
+        await _notificationService.SendTweetNotificationAsync(
+            newTweet.Id, 
+            user.UserName, 
+            tweet, 
+            DateTime.Now, 
+            0, 
+            user.Id
+        );
+
+        await _tweetRepo.SaveChangesAsync();
+
+        return Json(new { success = true });
     }
 
+
+
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Delete(int tweetId)
     {
         var tweet = _tweetRepo.Tweets.FirstOrDefault(t => t.Id == tweetId);
@@ -63,7 +106,7 @@ public class TweetController : Controller
     }
 
     [HttpPost]
-    //[Authorize]
+    [Authorize]
     public async Task<IActionResult> Like(int tweetId)
     {
         var userId = _userManager.GetUserId(User);
@@ -92,6 +135,7 @@ public class TweetController : Controller
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Unlike(int tweetId)
     {
         var tweet = _tweetRepo.Tweets.FirstOrDefault(t => t.Id == tweetId);
@@ -132,16 +176,11 @@ public class TweetController : Controller
         return View(likes);
     }
 
-    //combine with Create
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Reply(int ParentTweetId, string Content)
     {
-        Console.WriteLine("ParentTweetId is :" + ParentTweetId + " Content is :" + Content);
         if (string.IsNullOrEmpty(Content))
-        {
-            return RedirectToAction("Index", "Home");
-        }
-        if(_signInManager.IsSignedIn(User) == false)
         {
             return RedirectToAction("Index", "Home");
         }
@@ -153,22 +192,17 @@ public class TweetController : Controller
             return NotFound();
         }
 
-        Console.WriteLine("parentTweet is :" + ParentTweetId + " Content is :" + Content);
-
-        var newTweet = new Tweet
-        {
-            UserId = currentUser.Id,
-            Username = currentUser.UserName,
-            TweetContent = Content,
-            CreatedAt = DateTime.Now,
-            ParentTweetId = ParentTweetId,
-            ParentTweet = parentTweet
-        };
+        var newTweet = new TweetBuilder()
+            .WithUser(currentUser)
+            .WithContent(Content)
+            .WithCreatedAt(DateTime.Now)
+            .WithParentTweetId(ParentTweetId)
+            .WithParentTweet(parentTweet)
+            .Build();
 
         _tweetRepo.Tweets.Add(newTweet);
         _tweetRepo.SaveChanges();
 
-        //return RedirectToAction("Index", "Home");
         string referer = Request.Headers["Referer"].ToString();
         if (!string.IsNullOrEmpty(referer))
         {
@@ -240,7 +274,6 @@ public class TweetController : Controller
     [HttpPost]
     public async Task<IActionResult> Retweet(int tweetId, bool isRetweet)
     {
-        Console.WriteLine("Retweet " + tweetId);
         var currentUser = await _userManager.GetUserAsync(User);
 
         var tweet = await _tweetRepo.Tweets

@@ -67,7 +67,7 @@
 @if (SignInManager.IsSignedIn(User))
 {
     <div class="tweet-form-container">
-        <form id="tweetCreationForm" method="post" asp-controller="Home" asp-action="Create">
+        <form id="tweetCreationForm" method="post" asp-controller="Tweet" asp-action="Create">
             <input type="text" id="username" name="username" value="@User.Identity.Name" hidden><br><br>
             
             <textarea id="tweet" name="tweet" rows="4" cols="50" maxlength="280" required placeholder="What's happening?" class="tweet-input"></textarea>

@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Identity;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.SignalR;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 
 using TwitterClone.Data;
@@ -22,19 +20,17 @@ public class HomeController : Controller
     private readonly ILogger<HomeController> _logger;
     private readonly TwitterContext _tweetRepo;
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IHubContext<NotificationHub> _hubContext;
     private readonly ITweetRetrievalStrategy _viewStrategy;
     private readonly IPopularTweetStrategy _popularTweetStrategy;
 
     public HomeController(ILogger<HomeController> logger, TwitterContext db,
-                         UserManager<ApplicationUser> userManager, IHubContext<NotificationHub> hubContext,
+                         UserManager<ApplicationUser> userManager,
                          ITweetRetrievalStrategy viewStrategy,
                          IPopularTweetStrategy popularTweetStrategy)
     {
         _logger = logger;
         _tweetRepo = db;
         _userManager = userManager;
-        _hubContext = hubContext;
         _viewStrategy = viewStrategy;
         _popularTweetStrategy = popularTweetStrategy;
     }
@@ -83,102 +79,6 @@ public class HomeController : Controller
             return View("Index", tweets);
         }
         
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Create(string username, string tweet)
-    {
-        Console.WriteLine("tweet is :" + tweet);
-
-        var user = await _userManager.GetUserAsync(User);
-
-        if(user == null || string.IsNullOrEmpty(tweet))
-        {
-            return RedirectToAction("Index", "Home");
-        }
-
-        MatchCollection matches = Regex.Matches(tweet, @"#\w+");
-        List<string> hashtags = matches.Cast<Match>().Select(match => match.Value).ToList();
-        
-        if(hashtags.Count != 0) 
-        {
-            tweet = StaticMethods.ConvertToHtmlWithClickableHashtags(tweet);
-        }
-
-        var newTweet = new Tweet
-        { 
-            UserId = user.Id, 
-            Username = user.UserName, 
-            TweetContent = tweet, 
-            CreatedAt = DateTime.Now,
-            User = user
-        };
-
-        _tweetRepo.Tweets.Add(newTweet);
-        //_tweetRepo.SaveChanges();
-
-        
-
-        if(hashtags.Count != 0)
-        {
-            
-            var tweetHashtags = new List<TweetHashtag>();
-            foreach(var hashtag in hashtags)
-            {
-                
-                var newHashtag = new Hashtag
-                {
-                    Tag = hashtag.Substring(1)
-                };
-                _tweetRepo.Hashtags.Add(newHashtag);
-
-
-                var newTweetHashtag = new TweetHashtag
-                {
-                    TweetId = newTweet.Id,
-                    HashtagId = newHashtag.Id
-                };
-                tweetHashtags.Add(newTweetHashtag);
-            }
-            _tweetRepo.TweetHashtags.AddRange(tweetHashtags);
-            
-        }
-
-        await _tweetRepo.SaveChangesAsync();
-
-        await NotifyFollowersOfNewTweet(user.Id, "New tweet posted!", newTweet.Id);
-
-                                                            //( id,         username,       content, createdAt,           likesCount,            userId,   isLikedByCurrentUser)
-        await _hubContext.Clients.All.SendAsync("ReceiveTweet", newTweet.Id, user.UserName, tweet, DateTime.Now.ToString(), newTweet.Likes.Count, user.Id, false );
-
-
-        return Json(new { success = true });
-    }
-
-    private async Task NotifyFollowersOfNewTweet(string userId, string message, int tweetId)
-    {
-        // Fetch all followers of the user.
-        var followers = await _tweetRepo.UserFollowers
-            .Where(uf => uf.FollowingId == userId)
-            .Select(uf => uf.FollowerId)
-            .ToListAsync();
-
-        foreach(var follower in followers)
-        {
-
-            var notification = new Notification
-            {
-                UserId = follower,
-                Message = message,
-                TweetId = tweetId,
-                Timestamp = DateTime.Now
-            };
-
-            _tweetRepo.Notifications.Add(notification);
-            await _tweetRepo.SaveChangesAsync();
-
-            await _hubContext.Clients.User(follower).SendAsync("ReceiveNotification", message);
-        }
     }
 
     [Authorize]

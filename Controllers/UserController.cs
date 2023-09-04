@@ -129,14 +129,12 @@ public class UserController : Controller
 
         if(type == "followers")
         {
-            // Fetching the list of users who follow the given user
             userQuery = _tweetRepo.Users
                                 .Where(u => u.Id == id)
                                 .SelectMany(u => u.Followers.Select(f => f.Follower));
         }
         else if(type == "followings")
         {
-            // Fetching the list of users whom the given user follows
             userQuery = _tweetRepo.Users
                                 .Where(u => u.Id == id)
                                 .SelectMany(u => u.Following.Select(f => f.Following));
@@ -218,7 +216,6 @@ public class UserController : Controller
             .Include(b => b.Tweet.Replies)
             .Select(b => b.Tweet)
             .ToListAsync();
-
 
         if (bookmarks == null)
         {
