@@ -12,7 +12,7 @@
     {
         <li>
             <div class="tweet-like">
-                <a href="/@user.UserName">@user.UserName</a>
+                <a asp-controller="User" asp-action="Index" asp-route-id="@user.Id">@user.UserName</a>
             </div>
         </li>
     }

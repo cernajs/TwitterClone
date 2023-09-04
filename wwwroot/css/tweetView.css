@@ -86,14 +86,14 @@ body {
   /* Button container */
   .button-container-grid {
     display: flex;
-    justify-content: end;
+    justify-content: space-evenly;
     row-gap: 8px;
     flex-wrap: nowrap;
     margin-top: 20px;
   }
   
   /* Button Style */
-  .action-btn {
+  /* .action-btn {
     padding: 10px;
     background-color: #1da1f2;
     color: white;
@@ -101,7 +101,28 @@ body {
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+  } */
+
+  .action-btn {
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: #1da1f2;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
+  
+  .action-btn:hover {
+    background-color: rgba(29, 161, 242, 0.1);
+    color: #1da1f2;
+  }
+  
+  /* .action-btn:active, .action-btn:focus {
+    background-color: rgba(29, 161, 242, 0.2);
+    color: #1da1f2;
+    outline: none;
+  } */
   
   .action-btn:hover {
     background-color: #0e76a8;

@@ -8,6 +8,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 
 
@@ -18,30 +19,30 @@ namespace TwitterClone.Controllers;
 
 public class UserController : Controller
 {
-    private readonly ILogger<HomeController> _logger;
     private readonly TwitterContext _tweetRepo;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IUserService _userService;
 
-    public UserController(ILogger<HomeController> logger, TwitterContext db, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+    public UserController(TwitterContext db,
+                            UserManager<ApplicationUser> userManager,
+                            SignInManager<ApplicationUser> signInManager,
+                            IUserService userService)
     {
-        _logger = logger;
         _tweetRepo = db;
         _userManager = userManager;
         _signInManager = signInManager;
+        _userService = userService;
     }
 
+    /// <summary>
+    ///     Get user profile page with related data
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     public async Task<IActionResult> Index(string id)
     {
-        var user = await _tweetRepo.Users
-                .Include(u => u.Followers)
-                .Include(u => u.Following)
-                .Include(u => u.Retweets)
-                    .ThenInclude(r => r.Tweet)
-                        .ThenInclude(t => t.User)
-                .Include(u => u.Tweets)
-                    .ThenInclude(t => t.Likes)
-                .Include(u => u.LikedTweets).FirstOrDefaultAsync(u => u.Id == id);
+        var user = await _userService.GetUserRelatedDataAsync(id);
 
         if (user == null)
         {
@@ -51,48 +52,50 @@ public class UserController : Controller
         return View(user);
     }
 
+    /// <summary>
+    ///     create new follow relationship in database if it already doesnt exist
+    /// </summary>
+    /// <param name="userIdToFollow"></param>
+    /// <returns></returns>
     [HttpPost]
-    //[Authorize]
+    [Authorize]
     public async Task<IActionResult> Follow(string userIdToFollow)
     {
         if (string.IsNullOrEmpty(userIdToFollow))
         {
             return BadRequest("User ID cannot be empty.");
         }
-
-        var currentUser = await _userManager.GetUserAsync(User);
         var userToFollow = await _userManager.FindByIdAsync(userIdToFollow);
+        var currentUserId = _userManager.GetUserId(User);
 
         if (userToFollow == null)
         {
             return NotFound("User not found.");
         }
 
-        if (currentUser.Id == userIdToFollow)
+        if (currentUserId == userIdToFollow)
         {
             return BadRequest("You cannot follow yourself.");
         }
 
-        if (_tweetRepo.UserFollowers.Any(uf => uf.FollowerId == currentUser.Id && uf.FollowingId == userIdToFollow))
+        var result = await _userService.FollowUserAsync(_userManager.GetUserId(User), userIdToFollow);
+
+        if (!result)
         {
-            return BadRequest("Already following this user.");
+            return BadRequest("You are already following this user.");
         }
-
-        var userFollower = new UserFollower
-        {
-            FollowerId = currentUser.Id,
-            FollowingId = userIdToFollow
-        };
-
-        _tweetRepo.UserFollowers.Add(userFollower);
-        await _tweetRepo.SaveChangesAsync();
 
         return RedirectToAction("Index", new { id = userIdToFollow });
     }
 
 
-
+    /// <summary>
+    ///     remove follow relationship from database if it exists
+    /// </summary>
+    /// <param name="userIdToUnfollow"></param>
+    /// <returns></returns>
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Unfollow(string userIdToUnfollow)
     {
         if (string.IsNullOrEmpty(userIdToUnfollow))
@@ -106,42 +109,31 @@ public class UserController : Controller
             return BadRequest("You cannot unfollow yourself.");
         }
 
-        // Find the following relationship
-        var followingRelationship = await _tweetRepo.UserFollowers
-            .FirstOrDefaultAsync(uf => uf.FollowerId == currentUserId && uf.FollowingId == userIdToUnfollow);
+        var result = await _userService.UnfollowUserAsync(currentUserId, userIdToUnfollow);
 
-        if (followingRelationship == null)
+        if(!result)
         {
-            return NotFound("Following relationship not found.");
+            return BadRequest("You are not following this user.");
         }
-
-        // Remove the relationship
-        _tweetRepo.UserFollowers.Remove(followingRelationship);
-        await _tweetRepo.SaveChangesAsync();
 
         return RedirectToAction("Index", new { id = userIdToUnfollow });
     }
 
-
+    /// <summary>
+    ///     Show all users that the current user is following
+    ///     or show all user that follows the current user
+    ///     based on type parameter
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
     public async Task<IActionResult> ShowUsers(string id, string type)
     {
-        IQueryable<ApplicationUser> userQuery;
+        IQueryable<ApplicationUser> userQuery = await _userService.ShowUsersAsync(id, type);
 
-        if(type == "followers")
+        if(userQuery == null)
         {
-            userQuery = _tweetRepo.Users
-                                .Where(u => u.Id == id)
-                                .SelectMany(u => u.Followers.Select(f => f.Follower));
-        }
-        else if(type == "followings")
-        {
-            userQuery = _tweetRepo.Users
-                                .Where(u => u.Id == id)
-                                .SelectMany(u => u.Following.Select(f => f.Following));
-        }
-        else
-        {
-            return BadRequest("Invalid type specified");
+            return NotFound();
         }
 
         var users = await userQuery.ToListAsync();
@@ -151,78 +143,57 @@ public class UserController : Controller
         return View(users);
     }
 
+    /// <summary>
+    ///     Edit currently logged in user profile
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> EditProfile([FromBody] EditProfileViewModel model)
     {
         Console.WriteLine("EditProfile " + model.Id + " " + model.UserName + " " + model.Email);
+        
         if (ModelState.IsValid)
         {
-            var user = await _userManager.FindByIdAsync(model.Id);
-            if (user == null)
+            var result = await _userService.EditUserProfileAsync(model);
+
+            if (result.Success)
             {
-                return NotFound("User not found");
-            }
-
-            var existingUser = await _userManager.FindByEmailAsync(model.Email);
-            if (existingUser != null && existingUser.Id != model.Id)
-            {
-                return BadRequest("Email already exists.");
-            }
-
-            var tweets = await _tweetRepo.Tweets.Where(t => t.UserId == model.Id).ToListAsync();
-            foreach (var tweet in tweets)
-            {
-                tweet.Username = model.UserName;
-            }
-
-            user.UserName = model.UserName;
-            user.Email = model.Email;
-
-            await _tweetRepo.SaveChangesAsync();
-
-            var result = await _userManager.UpdateAsync(user);
-            if (result.Succeeded)
-            {
-                // sign-out the user first
                 await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
 
                 // get any new claims that have been added to the user
-                user = await _userManager.GetUserAsync(HttpContext.User);
+                var user = await _userManager.GetUserAsync(HttpContext.User);
                 
                 // sign user back in
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                
-                return Ok(new { Success = true });
+
+                return Json(new { success = true, action = "profile edited" });
             }
             else
             {
-                return BadRequest(result.Errors);
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error);
+                }
+                return BadRequest(ModelState);
             }
         }
         return BadRequest(ModelState);
     }
 
+    /// <summary>
+    ///     Show all tweets that the current user has bookmarked
+    /// </summary>
+    /// <returns></returns>
+    [Authorize]
     public async Task<IActionResult> ShowBookmarks()
     {
         var id = _userManager.GetUserId(User); 
 
-        var bookmarks = await _tweetRepo.TweetBookmarks
-            .Where(b => b.UserId == id)
-            .Include(b => b.Tweet)
-            .ThenInclude(t => t.User)
-            .Include(b => b.Tweet.Likes)
-            .Include(b => b.Tweet.Bookmarks)
-            .Include(b => b.Tweet.Retweets)
-            .Include(b => b.Tweet.Replies)
-            .Select(b => b.Tweet)
-            .ToListAsync();
+        var bookmarks = await _userService.GetBookmarksAsync(id);
 
-        if (bookmarks == null)
-        {
-            return NotFound();
-        }
-
-        //bookmarks ??= new List<Tweet>();
+        bookmarks ??= new List<Tweet>();
 
         return View(bookmarks);
     }

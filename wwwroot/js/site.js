@@ -22,24 +22,48 @@
             
                 <div class="button-container-grid">
                 
-                <button type="submit" class="reply-button action-btn" data-tweet-id="${id}">Reply</button>
+                <button type="submit" class="reply-button action-btn" data-tweet-id="${id}">
+                    <i class="fa fa-comment" aria-hidden="true"></i>
+                </button>
 
-                    <form method="post" action="/Tweet/Retweet" class="retweet-form">
-                        <input type="hidden" name="tweetId" value="${id}" />
-                        <button class="action-btn" type="submit">Retweet</button>
-                    </form>          
+                <form method="post" action="/Tweet/Retweet" class="retweet-form">
+                    <input type="hidden" name="tweetId" value="${id}" />
+                    <button class="action-btn" type="submit">
+                        <i class="fa fa-retweet" aria-hidden="true"></i>
+                    </button>
+                </form>          
 
-                    <form method="post" action="/Tweet/Like" class="like-form">
-                        <input type="hidden" name="tweetId" value="${id}" />
-                        <button class="action-btn" type="submit">Like</button>
-                    </form>
+                <form method="post" action="/Tweet/Like" class="like-form">
+                    <input type="hidden" name="tweetId" value="${id}" />
+                    <button class="action-btn" type="submit">
+                        <i class="fa fa-heart-o" aria-hidden="true"></i>
+                    </button>
+                </form>
 
-                    <form method="post" action="/Tweet/Bookmark" class="bookmark-form">
-                        <input type="hidden" name="tweetId" value="${id}" />
-                        <button class="action-btn" type="submit">Bookmark</button>
-                    </form>
+                <form method="post" action="/Tweet/Bookmark" class="bookmark-form">
+                    <input type="hidden" name="tweetId" value="${id}" />
+                    <button class="action-btn" type="submit">
+                        <i class="fa fa-bookmark-o" aria-hidden="true"></i>
+                    </button>
+                </form>
                 
                 
+                </div>
+            </div>
+
+            <div class="modal reply-modal" data-tweet-id="${id}">
+                <div class="modal-content">
+                    <span class="close-button" id="closeModalReply">&times;</span>
+                    <h2>Reply</h2>
+                    <form id="ReplyForm" class="modal-form" method="post" asp-action="Reply" asp-controller="Tweet">
+                        <input type="hidden" name="ParentTweetId" value="${id}" />
+                        <div class="form-row">
+                            <textarea name="Content"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <button type="submit" class="save-button">Reply</button>
+                        </div>
+                    </form>
                 </div>
             </div>
             `;
@@ -88,12 +112,12 @@
                             if (isLike) {
                                 // Swap the "Like" button with "Unlike"
                                 $form.removeClass('like-form').addClass('unlike-form');
-                                $form.find('button').text('Unlike');
+                                $form.find('button').html('<i class="fa fa-heart" aria-hidden="true"></i>');
                                 $form.attr('action', '/Tweet/Unlike');
                             } else {
                                 // Swap the "Unlike" button with "Like"
                                 $form.removeClass('unlike-form').addClass('like-form');
-                                $form.find('button').text('Like');
+                                $form.find('button').html('<i class="fa fa-heart-o" aria-hidden="true"></i>');
                                 $form.attr('action', '/Tweet/Like');
                             }
 
@@ -127,7 +151,7 @@
                             // tweet is added to the feed through SignalR.
                             $("#tweet").val('');
                         } else {
-                            alert('Failed to create tweet!');
+                            window.location.href = response.redirectUrl;
                         }
                     },
                     error: function () {
@@ -310,13 +334,29 @@
             event.stopPropagation();
         });
 
+        $(".tweet-button").on("click", function (event) {
+            event.stopPropagation();
+        });
+
+        $("#tweetFeed").on("click", ".reply-button", function () {
+            const tweetId = $(this).data("tweet-id");
+            const $modalReply = $('.reply-modal[data-tweet-id="' + tweetId + '"]');
+            $modalReply.show();
+        });
+
         $(".reply-button").on("click", function () {
             const tweetId = $(this).data("tweet-id");
             const $modalReply = $('.reply-modal[data-tweet-id="' + tweetId + '"]');
             $modalReply.show();
         });
-    
+
         $(".close-button").on("click", function () {
+            const tweetId = $(this).closest('.reply-modal').data("tweet-id");
+            const $modalReply = $('.reply-modal[data-tweet-id="' + tweetId + '"]');
+            $modalReply.hide();
+        });
+
+        $(document).on("click", ".close-button", function () {
             const tweetId = $(this).closest('.reply-modal').data("tweet-id");
             const $modalReply = $('.reply-modal[data-tweet-id="' + tweetId + '"]');
             $modalReply.hide();
@@ -348,12 +388,12 @@
                         if (isBookmark) {
                             // Swap the "Bookmark" button with "Unbookmark"
                             $form.removeClass('bookmark-form').addClass('unbookmark-form');
-                            $form.find('button').text('Unbookmark');
+                            $form.find('button').html('<i class="fa fa-bookmark" aria-hidden="true"></i>');
 
                         } else {
                             // Swap the "Unbookmark" button with "Bookmark"
                             $form.removeClass('unbookmark-form').addClass('bookmark-form');
-                            $form.find('button').text('Bookmark');
+                            $form.find('button').html('<i class="fa fa-bookmark-o" aria-hidden="true"></i>');
 
                         }
                     } else {
@@ -390,11 +430,13 @@
                     if (response.success) {
                         if (isRetweet) {
                             $form.removeClass('retweet-form').addClass('unretweet-form');
-                            $form.find('button').text('Unretweet');
+                            $form.find('button').html("<i class=\"fa fa-times\" aria-hidden=\"true\"></i>");
+                            //$form.find('button').text('Unretweet');
 
                         } else {
                             $form.removeClass('unretweet-form').addClass('retweet-form');
-                            $form.find('button').text('Retweet');
+                            $form.find('button').html("<i class=\"fa fa-retweet\" aria-hidden=\"true\"></i>");
+                            //$form.find('button').text('Retweet');
 
                         }
                     } else {

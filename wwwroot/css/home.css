@@ -13,7 +13,6 @@ li {
     list-style-type: none;
 }
 
-/* Create a container for the tweet box */
 .container {
     max-width: 600px;
     margin: 20px auto;
@@ -23,13 +22,11 @@ li {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Style the header */
 h1 {
     font-size: 24px;
     margin-bottom: 10px;
 }
 
- /* Style the form elements */
 form label {
     font-size: 16px;
     font-weight: bold;
@@ -64,7 +61,6 @@ form input[type="submit"]:hover {
     background-color: #0c85d0;
 } 
 
-/* Style links to resemble Twitter's blue color */
 a {
     color: #1da1f2;
     text-decoration: none;
@@ -73,7 +69,7 @@ a {
 a:hover {
     text-decoration: underline;
 }
-
+/* 
 
 .action-btn {
     padding: 8px 12px;
@@ -82,7 +78,7 @@ a:hover {
     border-radius: 21px;
     border: none;
     cursor: pointer;
-}
+} */
 
 
 .button-container-flex {

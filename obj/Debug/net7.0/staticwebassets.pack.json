@@ -33,6 +33,154 @@
       "PackagePath": "staticwebassets/favicon.ico"
     },
     {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/HELP-US-OUT.txt",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/HELP-US-OUT.txt"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/css/font-awesome.css",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/css/font-awesome.css"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/css/font-awesome.min.css",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/css/font-awesome.min.css"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/fonts/FontAwesome.otf",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/fonts/FontAwesome.otf"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/fonts/fontawesome-webfont.eot",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/fonts/fontawesome-webfont.eot"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/fonts/fontawesome-webfont.svg",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/fonts/fontawesome-webfont.svg"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/fonts/fontawesome-webfont.ttf",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/fonts/fontawesome-webfont.ttf"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/fonts/fontawesome-webfont.woff",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/fonts/fontawesome-webfont.woff"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/fonts/fontawesome-webfont.woff2",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/fonts/fontawesome-webfont.woff2"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/less/animated.less",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/less/animated.less"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/less/bordered-pulled.less",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/less/bordered-pulled.less"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/less/core.less",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/less/core.less"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/less/fixed-width.less",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/less/fixed-width.less"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/less/font-awesome.less",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/less/font-awesome.less"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/less/icons.less",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/less/icons.less"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/less/larger.less",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/less/larger.less"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/less/list.less",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/less/list.less"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/less/mixins.less",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/less/mixins.less"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/less/path.less",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/less/path.less"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/less/rotated-flipped.less",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/less/rotated-flipped.less"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/less/screen-reader.less",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/less/screen-reader.less"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/less/stacked.less",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/less/stacked.less"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/less/variables.less",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/less/variables.less"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/scss/_animated.scss",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/scss/_animated.scss"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/scss/_bordered-pulled.scss",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/scss/_bordered-pulled.scss"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/scss/_core.scss",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/scss/_core.scss"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/scss/_fixed-width.scss",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/scss/_fixed-width.scss"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/scss/_icons.scss",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/scss/_icons.scss"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/scss/_larger.scss",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/scss/_larger.scss"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/scss/_list.scss",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/scss/_list.scss"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/scss/_mixins.scss",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/scss/_mixins.scss"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/scss/_path.scss",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/scss/_path.scss"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/scss/_rotated-flipped.scss",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/scss/_rotated-flipped.scss"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/scss/_screen-reader.scss",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/scss/_screen-reader.scss"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/scss/_stacked.scss",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/scss/_stacked.scss"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/scss/_variables.scss",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/scss/_variables.scss"
+    },
+    {
+      "Id": "/Users/cernajs/dev/tt/wwwroot/font-awesome-4.7.0/scss/font-awesome.scss",
+      "PackagePath": "staticwebassets/font-awesome-4.7.0/scss/font-awesome.scss"
+    },
+    {
       "Id": "/Users/cernajs/dev/tt/wwwroot/js/site.js",
       "PackagePath": "staticwebassets/js/site.js"
     },

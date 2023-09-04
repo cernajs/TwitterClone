@@ -2,11 +2,6 @@ namespace TwitterClone.SD;
 
 public static class StaticMethods
 {
-    // public static string GetUserId(this ClaimsPrincipal user)
-    // {
-    //     return user.FindFirstValue(ClaimTypes.NameIdentifier);
-    // }
-
     public static string ConvertToHtmlWithClickableHashtags(string tweetText)
     {
         var words = tweetText.Split(' ');
@@ -20,5 +15,4 @@ public static class StaticMethods
         }
         return string.Join(' ', words);
     }
-
 }

@@ -39,15 +39,7 @@ public class HomeController : Controller
     public async Task<IActionResult> Index()
     {
         //retreive tweets by given strategy
-        //var tweets = await _viewStrategy.GetTweetsAsync(userId : null);
-
-        var tweets = await _tweetRepo.Tweets
-            .Include(t => t.User)
-            .Include(t => t.Likes)
-            .Include(t => t.Bookmarks)
-            .Include(t => t.Replies)
-            .Include(t => t.Retweets)
-            .Include(t => t.Replies).ToListAsync();
+        var tweets = await _viewStrategy.GetTweetsAsync(userId : null);
 
         return View(tweets);
     }
@@ -120,10 +112,17 @@ public class HomeController : Controller
     [HttpGet("api/getTrendingTopics")]
     public async Task<IActionResult> GetTrendingTopics()
     {
-        var trendingTopics = await _tweetRepo.Hashtags
-            .OrderByDescending(h => h.TweetHashtags.Count)
+        var trendingTopics = await _tweetRepo.TweetHashtags
+            .Include(th => th.Hashtag)
+            .GroupBy(th => th.Hashtag.Tag)
+            .Select(group => new
+            {
+                Tag = group.Key,
+                Count = group.Count()
+            })
+            .OrderByDescending(g => g.Count)
             .Take(3)
-            .Select(h => h.Tag)
+            .Select(g => g.Tag)
             .ToListAsync();
 
         return Json(trendingTopics);

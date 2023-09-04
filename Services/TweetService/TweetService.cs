@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace TwitterClone.Data;
 
 public class TweetService : ITweetService
@@ -9,6 +11,12 @@ public class TweetService : ITweetService
         _tweetRepo = db;
     }
 
+    /// <summary>
+    ///     Create a new tweet and add it to the database
+    /// </summary>
+    /// <param name="user"></param>
+    /// <param name="tweetContent"></param>
+    /// <returns></returns>
     public async Task<Tweet> CreateTweetAsync(ApplicationUser user, string tweetContent)
     {
         var tweet = new TweetBuilder()
@@ -21,5 +29,205 @@ public class TweetService : ITweetService
         await _tweetRepo.SaveChangesAsync();
 
         return tweet;
+    }
+
+    /// <summary>
+    ///     Like a tweet by adding a TweetLike relationship to the database
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="tweetId"></param>
+    /// <returns></returns>
+    public async Task<bool> LikeTweetAsync(string userId, int tweetId)
+    {
+        var existingLike = await _tweetRepo.TweetLikes
+            .FirstOrDefaultAsync(l => l.TweetId == tweetId && l.UserId == userId);
+
+        if (existingLike == null)
+        {
+            var like = new TweetLike
+            {
+                TweetId = tweetId,
+                UserId = userId,
+                LikedAt = DateTime.Now
+            };
+            _tweetRepo.TweetLikes.Add(like);
+            await _tweetRepo.SaveChangesAsync();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    ///     Unlike a tweet by removing the TweetLike relationship from the database
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="tweetId"></param>
+    /// <returns></returns>
+    public async Task<bool> UnlikeTweetAsync(string userId, int tweetId)
+    {
+        var existingLike = await _tweetRepo.TweetLikes
+            .FirstOrDefaultAsync(l => l.TweetId == tweetId && l.UserId == userId);
+
+        if (existingLike == null)
+        {
+            return false;
+        }
+
+        _tweetRepo.TweetLikes.Remove(existingLike);
+        await _tweetRepo.SaveChangesAsync();
+
+        return true;
+    }
+
+    /// <summary>
+    ///     Retrieve all tweets from the database that are liked by the user with the given id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public Task<IEnumerable<ApplicationUser>> ShowLikesAsync(int id)
+    {
+        return _tweetRepo.Tweets
+            .Where(t => t.Id == id)
+            .SelectMany(t => t.Likes.Select(l => l.User))
+            .ToListAsync()
+            .ContinueWith(task => task.Result.AsEnumerable() as IEnumerable<ApplicationUser>);
+    }
+
+
+    /// <summary>
+    ///     Create reply to tweet with the given parentTweetId and add it to the database
+    /// </summary>
+    /// <param name="parentTweetId"></param>
+    /// <param name="content"></param>
+    /// <param name="currentUser"></param>
+    /// <returns></returns>
+    public async Task<Tweet> ReplyToTweetAsync(int parentTweetId, string content, ApplicationUser currentUser)
+    {
+        var parentTweet = _tweetRepo.Tweets.FirstOrDefault(t => t.Id == parentTweetId);
+        if (parentTweet == null)
+        {
+            return null;
+        }
+
+        var newTweet = new TweetBuilder()
+            .WithUser(currentUser)
+            .WithContent(content)
+            .WithCreatedAt(DateTime.Now)
+            .WithParentTweetId(parentTweetId)
+            .WithParentTweet(parentTweet)
+            .Build();
+
+        _tweetRepo.Tweets.Add(newTweet);
+        await _tweetRepo.SaveChangesAsync();
+
+        return newTweet;
+    }
+
+    /// <summary>
+    ///     Retrieve all tweets from the database that are replies to the tweet with the given id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public Task<IEnumerable<Tweet>> ViewRepliesAsync(int id)
+    {
+        return _tweetRepo.Tweets
+                    .Include(t => t.ParentTweet)
+                    .Where(t => t.ParentTweetId == id)
+                    .ToListAsync()
+                    .ContinueWith(task => task.Result.AsEnumerable() as IEnumerable<Tweet>);
+    }
+
+    /// <summary>
+    ///     Bookmark a tweet by adding a TweetBookmark relationship to the database
+    ///     or unbookmark a tweet by removing the TweetBookmark relationship from the database
+    ///     depending on the value of isBookmarked
+    /// </summary>
+    /// <param name="tweetId"></param>
+    /// <param name="currentUserId"></param>
+    /// <param name="isBookmarked"></param>
+    /// <returns></returns>
+    public async Task<bool> BookmarkTweetAsync(int tweetId, string currentUserId, bool isBookmarked)
+    {
+        if(isBookmarked)
+        {
+            if(_tweetRepo.TweetBookmarks.Any(tb => tb.UserId == currentUserId && tb.TweetId == tweetId))
+            {
+                return false;
+            }
+
+            var tweetBookmark = new TweetBookmark
+            {
+                UserId = currentUserId,
+                TweetId = tweetId
+            };
+
+            _tweetRepo.TweetBookmarks.Add(tweetBookmark);
+        }
+        else
+        {
+            var tweetBookmark = await _tweetRepo.TweetBookmarks
+                .Where(tb => tb.UserId == currentUserId && tb.TweetId == tweetId)
+                .FirstOrDefaultAsync();
+
+            if(tweetBookmark == null)
+            {
+                return false;
+            }
+
+            if (tweetBookmark != null)
+            {
+                _tweetRepo.TweetBookmarks.Remove(tweetBookmark);
+                
+            }
+        }
+        await _tweetRepo.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>
+    ///    Retweet a tweet by adding a Retweet relationship to the database
+    ///    or unretweet a tweet by removing the Retweet relationship from the database
+    ///    depending on the value of isRetweeted
+    /// </summary>
+    /// <param name="tweetId"></param>
+    /// <param name="currentUserId"></param>
+    /// <param name="isRetweeted"></param>
+    /// <returns></returns>
+    public async Task<bool> Retweet(int tweetId, string currentUserId, bool isRetweeted)
+    {
+        if(isRetweeted)
+        {
+            if(_tweetRepo.Retweets.Any(r => r.UserId == currentUserId && r.TweetId == tweetId))
+            {
+                return false;
+            }
+            var retweet = new Retweet {
+                UserId = currentUserId,
+                TweetId = tweetId,
+                RetweetTime = DateTime.Now
+            };
+
+            _tweetRepo.Retweets.Add(retweet);
+        }
+        else
+        {
+            var retweet = await _tweetRepo.Retweets
+                .Where(r => r.UserId == currentUserId && r.TweetId == tweetId)
+                .FirstOrDefaultAsync();
+
+            if(retweet == null)
+            {
+                return false;
+            }
+
+            if (retweet != null)
+            {
+                _tweetRepo.Retweets.Remove(retweet);
+            }
+        }
+        await _tweetRepo.SaveChangesAsync();
+        return true;
     }
 }

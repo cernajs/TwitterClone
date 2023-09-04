@@ -35,19 +35,17 @@
               {
                 <form method="post" asp-controller="User" asp-action="Follow">
                     <input type="hidden" name="userIdToFollow" value="@Model.Id" />
-                    <button type="submit">Follow</button>
+                    <button type="submit" class="action-btn">Follow</button>
                 </form>
               }
               else
               {
                 <form method="post" asp-controller="User" asp-action="Unfollow">
                     <input type="hidden" name="userIdToUnfollow" value="@Model.Id" />
-                    <button type="submit">Unfollow</button>
+                    <button type="submit" class="action-btn">Unfollow</button>
                 </form>
               }
               <a asp-controller="Chat" asp-action="ChatWithSpecificUser" asp-route-id="@Model.Id" class="action-btn">Chat</a>
-              @*  [HttpGet("api/messages/{id}")] *@
-              @* <a asp-controller="api" asp-action="messages" asp-route-id="@Model.Id" class="action-btn">Chat</a> *@
             }
         </div>
     </div>

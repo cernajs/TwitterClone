@@ -17,6 +17,6 @@ public class GetAllTweets : ITweetRetrievalStrategy {
             .Include(t => t.Retweets)
             .Include(t => t.Replies).ToListAsync();
 
-        return tweets;
+        return tweets as IEnumerable<Tweet>;
     }
 }

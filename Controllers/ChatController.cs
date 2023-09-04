@@ -22,24 +22,20 @@ public class ChatController : Controller
 {
     private readonly ILogger<ChatController> _logger;
     private readonly TwitterContext _tweetRepo;
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IHubContext<NotificationHub> _hubContext;
-    private readonly ITweetRetrievalStrategy _viewStrategy;
+    private readonly IUserService _userService;
 
     public ChatController(ILogger<ChatController> logger, TwitterContext db,
-                         UserManager<ApplicationUser> userManager, IHubContext<NotificationHub> hubContext,
-                         ITweetRetrievalStrategy viewStrategy)
+                            IHubContext<NotificationHub> hubContext,
+                            IUserService userService)
     {
         _logger = logger;
         _tweetRepo = db;
-        _userManager = userManager;
-        _hubContext = hubContext;
-        _viewStrategy = viewStrategy;
+        _userService = userService;
     }
 
     public async Task<IActionResult> Index()
     {
-        var currentUser = await _userManager.GetUserAsync(User);
+        var currentUser = await _userService.GetUserAsync(User);
         var allChats = await _tweetRepo.ChatMessages
             .Where(m => m.SenderId == currentUser.Id || m.RecipientId == currentUser.Id)
             .GroupBy(m => m.SenderId == currentUser.Id ? m.RecipientId : m.SenderId)
@@ -57,8 +53,7 @@ public class ChatController : Controller
    [ActionName("ChatWithSpecificUser")]
     public async Task<IActionResult> ChatWithSpecificUserAsync(string id)
     {
-        Console.WriteLine("in ChatWithSpecificUserAsync");
-        var currentUser = await _userManager.GetUserAsync(User);
+        var currentUser = await _userService.GetUserAsync(User);
         ViewBag.CurrentUserId = currentUser.Id;
         ViewBag.OtherUserId = id;
         ViewBag.CurrentUserName = currentUser.UserName;
@@ -78,19 +73,15 @@ public class ChatController : Controller
 
     public async Task<IActionResult> CreateMessage([FromBody] ChatMessageDto chatMessageDto)
     {
-        //var senderId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var sender = await _userManager.GetUserAsync(User);
-        if (sender == null) return Challenge();  // Not logged in
+        var sender = await _userService.GetUserAsync(User);
+        if (sender == null) return Challenge();
 
-        //Console.WriteLine("recipient: " + chatMessageDto.RecipientId + " content: " + chatMessageDto.Content);
-
-        var message = new ChatMessage
-        {
-            SenderId = sender.Id,
-            RecipientId = chatMessageDto.RecipientId,
-            Content = chatMessageDto.Content,
-            Timestamp = DateTime.Now
-        };
+        var message = new ChatMessageBuilder()
+            .WithSenderId(sender.Id)
+            .WithRecipientId(chatMessageDto.RecipientId)
+            .WithContent(chatMessageDto.Content)
+            .WithTimestamp(DateTime.Now)
+            .Build();
 
         _tweetRepo.ChatMessages.Add(message);
         await _tweetRepo.SaveChangesAsync();
