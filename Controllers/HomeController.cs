@@ -22,23 +22,28 @@ public class HomeController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ITweetRetrievalStrategy _viewStrategy;
     private readonly IPopularTweetStrategy _popularTweetStrategy;
+    private readonly INotificationService _notificationService;
 
     public HomeController(ILogger<HomeController> logger, TwitterContext db,
                          UserManager<ApplicationUser> userManager,
                          ITweetRetrievalStrategy viewStrategy,
-                         IPopularTweetStrategy popularTweetStrategy)
+                         IPopularTweetStrategy popularTweetStrategy,
+                         INotificationService notificationService)
     {
         _logger = logger;
         _tweetRepo = db;
         _userManager = userManager;
         _viewStrategy = viewStrategy;
         _popularTweetStrategy = popularTweetStrategy;
+        _notificationService = notificationService;
     }
 
-
+    /// <summary>
+    ///     Retrieve tweets for home page given the strategy.
+    /// </summary>
+    /// <returns></returns>  
     public async Task<IActionResult> Index()
     {
-        //retreive tweets by given strategy
         var tweets = await _viewStrategy.GetTweetsAsync(userId : null);
 
         return View(tweets);
@@ -73,6 +78,10 @@ public class HomeController : Controller
         
     }
 
+    /// <summary>
+    ///     Retrieve tweets for popular page given the strategy.
+    /// </summary>
+    /// <returns></returns>  
     [Authorize]
     public async Task<IActionResult> Popular() {
         var popularTweets = await _popularTweetStrategy.GetTweetsAsync();
@@ -82,66 +91,21 @@ public class HomeController : Controller
         return View(popularTweets);
     }
 
-    [HttpGet("api/getNotificationCount")]
-    public async Task<IActionResult> GetNotificationCount()
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Challenge();
-
-        var notificationCount = await _tweetRepo.Notifications
-            .Where(n => n.UserId == user.Id && !n.IsSeen)
-            .CountAsync();
-
-        return Json(new { notificationCount });
-    }
-
+    /// <summary>
+    ///     Show notifications for the current user.
+    /// </summary>
+    /// <returns></returns>  
     [Authorize]
     public async Task<IActionResult> ShowNotifications()
     {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Challenge();
+		var user = await _userManager.GetUserAsync(User);
+		if (user == null) return Challenge();
 
-        var notifications = await _tweetRepo.Notifications
-            .Where(n => n.UserId == user.Id)
-            .OrderByDescending(n => n.Timestamp)
-            .ToListAsync();
+        var filteredNotification = await _notificationService.ShowNotificationsAsync(user.Id);
 
-        return View(notifications);
-    }
 
-    [HttpGet("api/getTrendingTopics")]
-    public async Task<IActionResult> GetTrendingTopics()
-    {
-        var trendingTopics = await _tweetRepo.TweetHashtags
-            .Include(th => th.Hashtag)
-            .GroupBy(th => th.Hashtag.Tag)
-            .Select(group => new
-            {
-                Tag = group.Key,
-                Count = group.Count()
-            })
-            .OrderByDescending(g => g.Count)
-            .Take(3)
-            .Select(g => g.Tag)
-            .ToListAsync();
-
-        return Json(trendingTopics);
-    }
-
-    [HttpGet("/api/getFollowSuggest")]
-    public async Task<IActionResult> GetFollowSuggest()
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null) return Json(new List<ApplicationUser>());
-
-        var followSuggest = await _tweetRepo.Users
-            .Where(u => u.Id != user.Id)
-            .OrderBy(u => Guid.NewGuid())
-            .Take(3)
-            .ToListAsync();
-
-        return Json(followSuggest);
-    }
+        return View(filteredNotification);
+	}
 
     public IActionResult Privacy()
     {

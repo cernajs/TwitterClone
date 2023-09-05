@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication;
+
 
 using TwitterClone.Models;
 
@@ -10,11 +12,18 @@ public class UserService : IUserService
 {
     private readonly TwitterContext _tweetRepo;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public UserService(TwitterContext db, UserManager<ApplicationUser> userManager)
+    public UserService(TwitterContext db,
+                        UserManager<ApplicationUser> userManager,
+                        SignInManager<ApplicationUser> signInManager,
+                        IHttpContextAccessor httpContextAccessor)
     {
         _tweetRepo = db;
         _userManager = userManager;
+        _signInManager = signInManager;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     /// <summary>
@@ -22,7 +31,7 @@ public class UserService : IUserService
     /// </summary>
     /// <param name="claimsPrincipal"></param>
     /// <returns></returns>
-    public async Task<ApplicationUser> GetUserAsync(ClaimsPrincipal claimsPrincipal)
+    public async Task<ApplicationUser?> GetUserAsync(ClaimsPrincipal claimsPrincipal)
     {
         return await _userManager.GetUserAsync(claimsPrincipal);
     }
@@ -34,7 +43,7 @@ public class UserService : IUserService
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
-    public Task<ApplicationUser> GetUserRelatedDataAsync(string userId)
+    public Task<ApplicationUser?> GetUserRelatedDataAsync(string userId)
     {
         return _tweetRepo.Users
                 .Include(u => u.Followers)
@@ -99,22 +108,23 @@ public class UserService : IUserService
     /// <param name="userId"></param>
     /// <param name="type"></param>
     /// <returns></returns>
-    public Task<IQueryable<ApplicationUser>> ShowUsersAsync(string userId, string type)
+    public Task<List<ApplicationUser>>? ShowUsersAsync(string userId, string type)
     {
-        IQueryable<ApplicationUser> userQuery;
         if(type == "followers")
         {
-            userQuery = _tweetRepo.Users
+            return _tweetRepo.Users
                                 .Where(u => u.Id == userId)
-                                .SelectMany(u => u.Followers.Select(f => f.Follower));
-            return Task.FromResult(userQuery);
+                                .SelectMany(u => u.Followers.Select(f => f.Follower))
+                                .ToListAsync();
+
         }
         else if(type == "followings")
         {
-            userQuery = _tweetRepo.Users
+            return _tweetRepo.Users
                                 .Where(u => u.Id == userId)
-                                .SelectMany(u => u.Following.Select(f => f.Following));
-            return Task.FromResult(userQuery);
+                                .SelectMany(u => u.Following.Select(f => f.Following))
+                                .ToListAsync();
+            
         }
         else
         {
@@ -186,5 +196,25 @@ public class UserService : IUserService
             .Include(b => b.Tweet.Replies)
             .Select(b => b.Tweet)
             .ToListAsync();
+    }
+
+    /// <summary>
+    ///     Relog the current user to update the claims
+    /// </summary>
+    /// <returns></returns>
+    public async Task<bool> RelogCurrrentUserAsync()
+    {
+        await _httpContextAccessor.HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+
+        var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
+
+        if (user == null)
+        {
+            return false;
+        }
+
+        await _signInManager.SignInAsync(user, isPersistent: false);
+
+        return true;
     }
 }

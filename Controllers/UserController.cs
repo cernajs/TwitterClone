@@ -22,6 +22,7 @@ public class UserController : Controller
     private readonly TwitterContext _tweetRepo;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
+
     private readonly IUserService _userService;
 
     public UserController(TwitterContext db,
@@ -78,7 +79,12 @@ public class UserController : Controller
             return BadRequest("You cannot follow yourself.");
         }
 
-        var result = await _userService.FollowUserAsync(_userManager.GetUserId(User), userIdToFollow);
+        if (currentUserId == null)
+        {
+            return BadRequest("You must be logged in to follow a user.");
+        }
+
+        var result = await _userService.FollowUserAsync(currentUserId, userIdToFollow);
 
         if (!result)
         {
@@ -109,6 +115,11 @@ public class UserController : Controller
             return BadRequest("You cannot unfollow yourself.");
         }
 
+        if(currentUserId == null)
+        {
+            return BadRequest("You must be logged in to unfollow a user.");
+        }
+
         var result = await _userService.UnfollowUserAsync(currentUserId, userIdToUnfollow);
 
         if(!result)
@@ -129,14 +140,12 @@ public class UserController : Controller
     /// <returns></returns>
     public async Task<IActionResult> ShowUsers(string id, string type)
     {
-        IQueryable<ApplicationUser> userQuery = await _userService.ShowUsersAsync(id, type);
-
-        if(userQuery == null)
+        if(string.IsNullOrEmpty(id) || string.IsNullOrEmpty(type))
         {
-            return NotFound();
+            return BadRequest();
         }
 
-        var users = await userQuery.ToListAsync();
+        List<ApplicationUser>? users = await _userService.ShowUsersAsync(id, type);
 
         users = users ?? new List<ApplicationUser>();
 
@@ -152,34 +161,36 @@ public class UserController : Controller
     [Authorize]
     public async Task<IActionResult> EditProfile([FromBody] EditProfileViewModel model)
     {
-        Console.WriteLine("EditProfile " + model.Id + " " + model.UserName + " " + model.Email);
         
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            var result = await _userService.EditUserProfileAsync(model);
-
-            if (result.Success)
-            {
-                await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
-
-                // get any new claims that have been added to the user
-                var user = await _userManager.GetUserAsync(HttpContext.User);
-                
-                // sign user back in
-                await _signInManager.SignInAsync(user, isPersistent: false);
-
-                return Json(new { success = true, action = "profile edited" });
-            }
-            else
-            {
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError("", error);
-                }
-                return BadRequest(ModelState);
-            }
+            return BadRequest(ModelState);
         }
-        return BadRequest(ModelState);
+        
+        var result = await _userService.EditUserProfileAsync(model);
+
+        if (!result.Success)
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error);
+            }
+            return BadRequest(ModelState);
+        }
+        
+        await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+
+        var user = await _userManager.GetUserAsync(HttpContext.User);
+
+        if (user == null)
+        {
+            return NotFound("User not found.");
+        }
+
+        await _signInManager.SignInAsync(user, isPersistent: false);
+
+        return Json(new { success = true, action = "profile edited" });
+        
     }
 
     /// <summary>
@@ -189,7 +200,12 @@ public class UserController : Controller
     [Authorize]
     public async Task<IActionResult> ShowBookmarks()
     {
-        var id = _userManager.GetUserId(User); 
+        var id = _userManager.GetUserId(User);
+
+        if(id == null)
+        {
+            return BadRequest("You must be logged in to view your bookmarks.");
+        }
 
         var bookmarks = await _userService.GetBookmarksAsync(id);
 

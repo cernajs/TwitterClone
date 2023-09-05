@@ -60,7 +60,7 @@ public class TweetController : Controller
 
         if(hashtags.Count != 0)
         {
-            _hashtagService.CreateHashtagsAsync(hashtags, newTweet.Id);
+            await _hashtagService.CreateHashtagsAsync(hashtags, newTweet.Id);
         }
 
         await _notificationService.NotifyFollowersOfNewTweetAsync(user.Id, "New tweet posted!", newTweet.Id);
@@ -89,20 +89,18 @@ public class TweetController : Controller
     [Authorize]
     public async Task<IActionResult> Delete(int tweetId)
     {
-        var tweet = _tweetRepo.Tweets.FirstOrDefault(t => t.Id == tweetId);
-        if (tweet == null)
-        {
-            return NotFound();
-        }
 
         var currentUser = await _userService.GetUserAsync(User);
-        if (tweet.User != currentUser)
+        if(currentUser == null)
         {
-            return Unauthorized();
+            return BadRequest();
         }
+        var result = await _tweetService.DeleteAsync(currentUser.Id, tweetId);
 
-        _tweetRepo.Tweets.Remove(tweet);
-        _tweetRepo.SaveChanges();
+        if(!result)
+        {
+            return BadRequest();
+        }
 
         return RedirectToAction("Index", "Home");
     }
@@ -117,6 +115,10 @@ public class TweetController : Controller
     public async Task<IActionResult> Like(int tweetId)
     {
         var user = await _userService.GetUserAsync(User);
+        if(user == null)
+        {
+            return Json(new { success = false, action = "like failed" });
+        }
         var userId = user.Id;
 
         var like = await _tweetService.LikeTweetAsync(userId, tweetId);
@@ -138,6 +140,10 @@ public class TweetController : Controller
     public async Task<IActionResult> Unlike(int tweetId)
     {
         var user = await _userService.GetUserAsync(User);
+        if(user == null)
+        {
+            return Json(new { success = false, action = "unlike failed" });
+        }
         var userId = user.Id;
 
         var unline = await _tweetService.UnlikeTweetAsync(userId, tweetId);
@@ -180,6 +186,10 @@ public class TweetController : Controller
         }
 
         var currentUser = await _userService.GetUserAsync(User);
+        if(currentUser == null)
+        {
+            return NotFound();
+        }
         var tweet = await _tweetService.ReplyToTweetAsync(ParentTweetId, Content, currentUser);
         if(tweet == null)
         {
@@ -202,11 +212,16 @@ public class TweetController : Controller
     /// <returns></returns>
     public async Task<IActionResult> ViewReplies(int id)
     {
-        var replies = await _tweetService.ViewRepliesAsync(id);
+        var (parentTweet, replies) = await _tweetService.ViewRepliesAndParentAsync(id);
 
-        replies = replies?.ToList() ?? new List<Tweet>();
+        if(parentTweet == null)
+        {
+            return NotFound();
+        }
 
-        return View(replies);
+        replies ??= new List<Tweet>();
+
+        return View(Tuple.Create(parentTweet, replies));
     }
 
 
@@ -220,6 +235,10 @@ public class TweetController : Controller
     public async Task<IActionResult> Bookmark(int tweetId, bool isBookmarked)
     {
         var currentUser = await _userService.GetUserAsync(User);
+        if(currentUser == null)
+        {
+            return Json(new { success = false, action = "bookmark failed" });
+        }
 
         var bookmarkChangeResult = await _tweetService.BookmarkTweetAsync(tweetId, currentUser.Id, isBookmarked);
 
@@ -245,9 +264,14 @@ public class TweetController : Controller
     /// <param name="isRetweet"></param>
     /// <returns></returns>
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Retweet(int tweetId, bool isRetweet)
     {
         var currentUser = await _userService.GetUserAsync(User);
+        if(currentUser == null)
+        {
+            return Json(new { success = false, action = "User not logged in" });
+        }
         var currentUserId = currentUser.Id;
 
         bool retweetResult;
@@ -256,18 +280,18 @@ public class TweetController : Controller
         }
         catch (Exception e)
         {
-            return Json(new { success = true, action = "Tweet doesnt exist" });
+            return Json(new { success = false, action = "Tweet doesnt exist" });
         }
 
         if (!retweetResult)
         {
             if (isRetweet)
             {
-                return Json(new { success = true, action = "Tweet already retweeted" });
+                return Json(new { success = false, action = "Tweet already retweeted" });
             }
             else
             {
-                return Json(new { success = true, action = "Tweet not retweeted" });
+                return Json(new { success = false, action = "Tweet not retweeted" });
             }
         }
 

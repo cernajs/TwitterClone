@@ -150,3 +150,18 @@ body {
       margin-right: 10px;
     }
   }
+
+.tweet-relative-wrapper {
+    position: relative;
+}
+
+.delete-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+    z-index: 10;
+}

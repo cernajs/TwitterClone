@@ -59,6 +59,25 @@ public class TweetService : ITweetService
         return false;
     }
 
+    public async Task<bool> DeleteAsync(string currentUserId, int tweetId)
+    {
+        var tweet = await _tweetRepo.Tweets.FirstOrDefaultAsync(t => t.Id == tweetId);
+        if (tweet == null)
+        {
+            return false;
+        }
+
+        if (tweet.User.Id != currentUserId)
+        {
+            return false;
+        }
+
+        _tweetRepo.Tweets.Remove(tweet);
+        await _tweetRepo.SaveChangesAsync();
+
+        return true;
+    }
+
     /// <summary>
     ///     Unlike a tweet by removing the TweetLike relationship from the database
     /// </summary>
@@ -130,14 +149,23 @@ public class TweetService : ITweetService
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    public Task<IEnumerable<Tweet>> ViewRepliesAsync(int id)
+    public async Task<(Tweet? ParentTweet, IEnumerable<Tweet> Replies)> ViewRepliesAndParentAsync(int id)
     {
-        return _tweetRepo.Tweets
-                    .Include(t => t.ParentTweet)
-                    .Where(t => t.ParentTweetId == id)
-                    .ToListAsync()
-                    .ContinueWith(task => task.Result.AsEnumerable() as IEnumerable<Tweet>);
+        // Query for the parent tweet
+        var parentTweet = await _tweetRepo.Tweets
+                                          .Include(t => t.User) // Include the user information
+                                          .FirstOrDefaultAsync(t => t.Id == id);
+
+        // Query for the replies
+        var replies = await _tweetRepo.Tweets
+                                      .Include(t => t.ParentTweet)
+                                      .Include(t => t.User) // Include the user information
+                                      .Where(t => t.ParentTweetId == id)
+                                      .ToListAsync();
+
+        return (parentTweet, replies);
     }
+
 
     /// <summary>
     ///     Bookmark a tweet by adding a TweetBookmark relationship to the database

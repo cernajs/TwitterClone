@@ -10,11 +10,15 @@ public class NotificationService : INotificationService
 {
     private readonly TwitterContext _tweetRepo;
     private readonly IHubContext<NotificationHub> _hubContext;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public NotificationService(TwitterContext db, UserManager<ApplicationUser> userManager, IHubContext<NotificationHub> hubContext)
+    public NotificationService(TwitterContext db,
+                                UserManager<ApplicationUser> userManager,
+                                IHubContext<NotificationHub> hubContext)
     {
         _tweetRepo = db;
         _hubContext = hubContext;
+        _userManager = userManager;
     }
 
     /// <summary>
@@ -30,7 +34,15 @@ public class NotificationService : INotificationService
     /// <returns></returns>
     public async Task SendTweetNotificationAsync(int tweetId, string username, string content, DateTime createdAt, int likesCount, string userId)
     {
-        await _hubContext.Clients.All.SendAsync("ReceiveTweet", tweetId, username, content, createdAt.ToString(), likesCount, userId, false );
+
+        foreach (var connectionId in NotificationHub.Users.Keys)
+        {
+            if (NotificationHub.Users.TryGetValue(connectionId, out string connectedUserId))
+            {
+                bool isCurrentUser = connectedUserId == userId;
+                await _hubContext.Clients.Client(connectionId).SendAsync("ReceiveTweet", tweetId, username, content, createdAt.ToString(), likesCount, userId, isCurrentUser);
+            }
+        }
     }
 
     /// <summary>
@@ -66,4 +78,62 @@ public class NotificationService : INotificationService
             await _hubContext.Clients.User(follower).SendAsync("ReceiveNotification", message);
         }
     }
+
+    /// <summary>
+    ///     Return the number of notifications for a given user
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    public Task<int> GetNotificationCountAsync(string userId)
+    {
+        return _tweetRepo.Notifications
+            .Where(n => n.UserId == userId && !n.IsSeen)
+            .CountAsync();
+    }
+
+    /// <summary>
+    ///     Retrieve all notifications for a given user,
+    ///     mark them as seen, and delete notifications
+    ///     that has been viewed
+    /// </summary>
+    /// <param name = "userId" ></ param >
+    /// <returns></returns>
+    public async Task<List<Notification>> ShowNotificationsAsync(string userId) {
+        
+        var notifications = await _tweetRepo.Notifications
+            .Include(n => n.Tweet)
+            .Include(n => n.Tweet.User)
+            .Where(n => n.UserId == userId)
+            .OrderByDescending(n => n.Timestamp)
+            .ToListAsync();
+
+        var NotificationsAlreadySeen = new List<Notification>();
+
+        foreach (var notification in notifications)
+        {
+            if (!notification.IsSeen)
+            {
+                notification.IsSeen = true;
+            }
+            else
+            {
+                NotificationsAlreadySeen.Add(notification);
+            }
+        }
+
+        foreach (var notification in NotificationsAlreadySeen)
+        {
+            if (notification != null)
+            {
+                _tweetRepo.Notifications.Remove(notification);
+            }
+        }
+
+        await _tweetRepo.SaveChangesAsync();
+
+        var filteredNotification = notifications.Where(n => !NotificationsAlreadySeen.Contains(n)).ToList();
+
+        return filteredNotification;
+    }
+
 }

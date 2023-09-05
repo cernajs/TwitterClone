@@ -1,20 +1,35 @@
 @model List<ApplicationUser>
 
+<style>
+    .better-h3 {
+      color: #333;
+      text-align: center;
+      padding: 20px;
+      border-radius: 10px;
+      background-color: #f9f9f9;
+    }
+</style>
 
-@if(Model.Count == 0)
+@if (Model.Count == 0)
 {
-    <h3>No followers/following</h3>
+    <h3 class="better-h3">No followers/following</h3>
 }
 else
 {
-    <ul>
+    <div class="row">
         @foreach(var follower in Model)
         {
-            <li>@follower.UserName</li>
+            <div class="col-12">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">@follower.UserName</h5>
+                        <p class="card-text">More details about the user.</p>
+                        <a asp-controller="User" asp-action="Index" asp-route-id="@follower.Id" class="btn btn-primary">View Profile</a>
+                    </div>
+                </div>
+            </div>
         }
-    </ul>
+    </div>
 }
 
-
-@* @Html.ActionLink("Back to Profile", "Index", "User") *@
 

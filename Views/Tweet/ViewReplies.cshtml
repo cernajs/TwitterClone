@@ -1,16 +1,55 @@
-@model IList<Tweet>
+@model Tuple<Tweet, IEnumerable<Tweet>>
 
-@if(Model.Count == 0)
-{
-    <div class="alert alert-info">
-        <p>There are no tweets to display.</p>
-    </div>
-}
+<style>
+/*    .better-h3 {
+      color: #333;
+      text-align: center;
+      padding: 20px;
+      border-radius: 10px;
+      background-color: #f9f9f9;
+    }*/
 
-<ul>
-@foreach(var tweet in Model)
-{
-    @* <partial name="_TweetPartial" model="@tweet" /> *@
-    <li>@tweet.TweetContent</li>
-}
-</ul>
+    li {
+		list-style-type: none;
+	}
+
+    .better-h3 {
+        padding: 10px;
+        background-color: #f1f1f1;
+        border-bottom: 2px solid #ccc;
+        margin-bottom: 10px;
+    }
+
+    .better-h3 h3 {
+        margin: 0;
+        padding: 0;
+        font-size: 1.5em;
+        color: #333;
+    }
+</style>
+
+<div>
+
+    <partial name="_TweetPartial" model="@Model.Item1" />
+
+    @if (Model.Item2 == null || !Model.Item2.Any())
+    {
+        <div class="alert alert-info">
+            <p>There are no replies to display.</p>
+        </div>
+    }
+    else
+    {
+        <div class="better-h3">
+            <h3>Replies</h3>
+        </div>
+        <ul>
+            @foreach (var tweet in Model.Item2)
+            {
+                <li>
+                    <partial name="_TweetPartial" model="@tweet" />
+                </li>
+            }
+        </ul>
+    }
+</div>

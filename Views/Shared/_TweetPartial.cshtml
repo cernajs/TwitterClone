@@ -4,8 +4,6 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @model Tweet
 
-@* <link rel="stylesheet" href="~/css/tweetView.css" asp-append-version="true" />
-<link rel="stylesheet" href="~/css/modal.css" asp-append-version="true" /> *@
 
 @if(Model is RetweetedTweet)
 {
@@ -14,90 +12,99 @@
     <p class="mb-0">This is Retweet</p>
   </div>
 }
-<div class="clickable-div tweet-wrap" data-tweet-id="@Model.Id">
-  <div class="tweet-header">
-    <img src="@Model.User.ProfilePicture" alt="" class="avator">
-    <div class="tweet-header-info">
-      <a asp-controller="User" asp-action="Index" asp-route-id="@Model.User.Id">@Model.Username:</a> <span>@Model.CreatedAt</span>
-      <p>@Html.Raw(@Model.TweetContent)</p>
+
+<div class="tweet-relative-wrapper">
+    @if (Model.User.Id == User.FindFirstValue(ClaimTypes.NameIdentifier))
+	{
+        <form asp-controller="Tweet" asp-action="Delete" method="post">
+            <input type="hidden" name="tweetId" value="@Model.Id" />
+            <button class="delete-button" type="submit">Delete</button>
+        </form>
+	}
+    
+    <div class="clickable-div tweet-wrap" data-tweet-id="@Model.Id">
+      <div class="tweet-header">
+        <img src="@Model.User.ProfilePicture" alt="" class="avator">
+        <div class="tweet-header-info">
+          <a asp-controller="User" asp-action="Index" asp-route-id="@Model.User.Id">@Model.Username:</a> <span>@Model.CreatedAt</span>
+          <p>@Html.Raw(@Model.TweetContent)</p>
+        </div>
+      </div>
+
+      <div class="tweet-info-counts">
+        <span class="likes">
+          <a asp-controller="Tweet" asp-action="ShowLikes" asp-route-id="@Model.Id">
+            # of likes : <span class="actual-count">@Model.Likes.Count</span>
+          </a>
+        </span>
+      </div>
+
+      <div class="button-container-grid">
+    
+        <button type="submit" class="reply-button action-btn" data-tweet-id="@Model.Id">
+          <i class="fa fa-comment" aria-hidden="true"></i>
+        </button>
+    
+        @if(Model.Retweets.Any(r => r.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) == false)
+        {
+            <form method="post" asp-action="Retweet" asp-controller="Tweet" class="retweet-form">
+                <input type="hidden" name="tweetId" value="@Model.Id" />
+                <button class="tweet-button action-btn" type="submit">
+                  <i class="fa fa-retweet" aria-hidden="true"></i>
+                </button>
+            </form>
+        }
+        else 
+        {
+            <form method="post" asp-action="Retweet" asp-controller="Tweet" class="unretweet-form">
+                <input type="hidden" name="tweetId" value="@Model.Id" />
+                <button class="tweet-button action-btn" type="submit">
+                  <i class="fa fa-times" aria-hidden="true"></i>
+                </button>
+            </form>
+        }
+
+
+        @if (Model.Likes.Any(l => l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) == false)
+        {
+          <form method="post" asp-action="Like" asp-controller="Tweet" class="like-form">
+            <input type="hidden" name="tweetId" value="@Model.Id" />
+            <button class="action-btn" type="submit">
+              <i class="fa fa-heart-o" aria-hidden="true"></i>
+            </button>
+          </form>
+        }
+        else
+        {
+          <form method="post" asp-action="Unlike" asp-controller="Tweet" class="unlike-form">
+            <input type="hidden" name="tweetId" value="@Model.Id" />
+            <button class="action-btn" type="submit">
+              <i class="fa fa-heart" aria-hidden="true"></i>
+            </button>
+          </form>
+        }
+        @if(Model.Bookmarks.Any(b => b.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) == false)
+        {
+            <form method="post" asp-action="Bookmark" asp-controller="Tweet" class="bookmark-form">
+                <input type="hidden" name="tweetId" value="@Model.Id" />
+                <button class="action-btn" type="submit">
+                  <i class="fa fa-bookmark-o" aria-hidden="true"></i>
+                </button>
+            </form>
+        }
+        else 
+        {
+            <form method="post" asp-action="Bookmark" asp-controller="Tweet" class="unbookmark-form">
+                <input type="hidden" name="tweetId" value="@Model.Id" />
+                <button class="action-btn" type="submit">
+                  <i class="fa fa-bookmark" aria-hidden="true"></i>
+                </button>
+            </form>
+        }
+    
+      </div>
     </div>
-  </div>
-
-  <div class="tweet-info-counts">
-    <span class="likes">
-      <a asp-controller="Tweet" asp-action="ShowLikes" asp-route-id="@Model.Id">
-        # of likes : <span class="actual-count">@Model.Likes.Count</span>
-      </a>
-    </span>
-  </div>
-
-  <div class="button-container-grid">
-    
-    @* <i class="fa fa-comment" aria-hidden="true"></i> *@
-    <button type="submit" class="reply-button action-btn" data-tweet-id="@Model.Id">
-      <i class="fa fa-comment" aria-hidden="true"></i>
-    </button>
-    
-    @if(Model.Retweets.Any(r => r.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) == false)
-    {
-        <form method="post" asp-action="Retweet" asp-controller="Tweet" class="retweet-form">
-            <input type="hidden" name="tweetId" value="@Model.Id" />
-            <button class="tweet-button action-btn" type="submit">
-              <i class="fa fa-retweet" aria-hidden="true"></i>
-            </button>
-        </form>
-    }
-    else 
-    {
-        <form method="post" asp-action="Retweet" asp-controller="Tweet" class="unretweet-form">
-            <input type="hidden" name="tweetId" value="@Model.Id" />
-            <button class="tweet-button action-btn" type="submit">
-              <i class="fa fa-times" aria-hidden="true"></i>
-            </button>
-        </form>
-    }
-
-
-    @if (Model.Likes.Any(l => l.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) == false)
-    {
-      <form method="post" asp-action="Like" asp-controller="Tweet" class="like-form">
-        <input type="hidden" name="tweetId" value="@Model.Id" />
-        <button class="action-btn" type="submit">
-          <i class="fa fa-heart-o" aria-hidden="true"></i>
-        </button>
-      </form>
-    }
-    else
-    {
-      <form method="post" asp-action="Unlike" asp-controller="Tweet" class="unlike-form">
-        <input type="hidden" name="tweetId" value="@Model.Id" />
-        <button class="action-btn" type="submit">
-          <i class="fa fa-heart" aria-hidden="true"></i>
-        </button>
-      </form>
-    }
-    @if(Model.Bookmarks.Any(b => b.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)) == false)
-    {
-        <form method="post" asp-action="Bookmark" asp-controller="Tweet" class="bookmark-form">
-            <input type="hidden" name="tweetId" value="@Model.Id" />
-            <button class="action-btn" type="submit">
-              <i class="fa fa-bookmark-o" aria-hidden="true"></i>
-            </button>
-        </form>
-    }
-    else 
-    {
-        <form method="post" asp-action="Bookmark" asp-controller="Tweet" class="unbookmark-form">
-            <input type="hidden" name="tweetId" value="@Model.Id" />
-            <button class="action-btn" type="submit">
-              <i class="fa fa-bookmark" aria-hidden="true"></i>
-            </button>
-        </form>
-    }
-    
-  </div>
 </div>
-
 
 <div class="modal reply-modal" data-tweet-id="@Model.Id">
   <div class="modal-content">

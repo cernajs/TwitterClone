@@ -1,53 +1,66 @@
 ﻿    
-        function addTweetToFeed(id, username, content, createdAt, likesCount, userId, isLikedByCurrentUser) {
+        function addTweetToFeed(id, username, content, createdAt, likesCount, userId, isCurrentUser) {
             const feed = $("#tweetFeed");
 
+            let deleteButton = '';
+            if (isCurrentUser) {
+                deleteButton = `
+                <form action="Tweet/Delete" method="post">
+                    <input type="hidden" name="tweetId" value="${id}" />
+                    <button class="delete-button" type="submit">Delete</button>
+                </form>
+                `;
+            }
+
             const tweetHtml = `
-            <div class="clickable-div tweet-wrap" data-tweet-id="@Model.Id">
-                <div class="tweet-header">
-                    <img src="avatar_url_here" alt="" class="avator">
-                    <div class="tweet-header-info">
-                        <a href="/User/Index/${userId}">${username}:</a> <span>${createdAt}</span>
-                        <p>${content}</p>
+            <div class="tweet-relative-wrapper">
+                ${deleteButton}
+                <div class="clickable-div tweet-wrap" data-tweet-id="@Model.Id">
+                    <div class="tweet-header">
+                        <img src="avatar_url_here" alt="" class="avator">
+                        <div class="tweet-header-info">
+                            <a href="/User/Index/${userId}">${username}:</a> <span>${createdAt}</span>
+                            <p>${content}</p>
+                        </div>
                     </div>
-                </div>
+                    
+                    <div class="tweet-info-counts">
+                        <span class="likes">
+                            <a href="/Tweet/ShowLikes/${id}">
+                            # of likes : <span class="actual-count">${likesCount}</span>
+                            </a>
+                        </span>
+                    </div>
             
-                <div class="tweet-info-counts">
-                    <span class="likes">
-                        <a href="/Tweet/ShowLikes/${id}">
-                        # of likes : <span class="actual-count">${likesCount}</span>
-                        </a>
-                    </span>
-                </div>
-            
-                <div class="button-container-grid">
+                    <div class="button-container-grid">
                 
-                <button type="submit" class="reply-button action-btn" data-tweet-id="${id}">
-                    <i class="fa fa-comment" aria-hidden="true"></i>
-                </button>
-
-                <form method="post" action="/Tweet/Retweet" class="retweet-form">
-                    <input type="hidden" name="tweetId" value="${id}" />
-                    <button class="action-btn" type="submit">
-                        <i class="fa fa-retweet" aria-hidden="true"></i>
+                    <button type="submit" class="reply-button action-btn" data-tweet-id="${id}">
+                        <i class="fa fa-comment" aria-hidden="true"></i>
                     </button>
-                </form>          
 
-                <form method="post" action="/Tweet/Like" class="like-form">
-                    <input type="hidden" name="tweetId" value="${id}" />
-                    <button class="action-btn" type="submit">
-                        <i class="fa fa-heart-o" aria-hidden="true"></i>
-                    </button>
-                </form>
+                    <form method="post" action="/Tweet/Retweet" class="retweet-form">
+                        <input type="hidden" name="tweetId" value="${id}" />
+                        <button class="action-btn" type="submit">
+                            <i class="fa fa-retweet" aria-hidden="true"></i>
+                        </button>
+                    </form>          
 
-                <form method="post" action="/Tweet/Bookmark" class="bookmark-form">
-                    <input type="hidden" name="tweetId" value="${id}" />
-                    <button class="action-btn" type="submit">
-                        <i class="fa fa-bookmark-o" aria-hidden="true"></i>
-                    </button>
-                </form>
+                    <form method="post" action="/Tweet/Like" class="like-form">
+                        <input type="hidden" name="tweetId" value="${id}" />
+                        <button class="action-btn" type="submit">
+                            <i class="fa fa-heart-o" aria-hidden="true"></i>
+                        </button>
+                    </form>
+
+                    <form method="post" action="/Tweet/Bookmark" class="bookmark-form">
+                        <input type="hidden" name="tweetId" value="${id}" />
+                        <button class="action-btn" type="submit">
+                            <i class="fa fa-bookmark-o" aria-hidden="true"></i>
+                        </button>
+                    </form>
                 
                 
+                    </div>
                 </div>
             </div>
 
@@ -55,7 +68,7 @@
                 <div class="modal-content">
                     <span class="close-button" id="closeModalReply">&times;</span>
                     <h2>Reply</h2>
-                    <form id="ReplyForm" class="modal-form" method="post" asp-action="Reply" asp-controller="Tweet">
+                    <form id="ReplyForm" class="modal-form" method="post" action="Tweet/Reply">
                         <input type="hidden" name="ParentTweetId" value="${id}" />
                         <div class="form-row">
                             <textarea name="Content"></textarea>
@@ -167,13 +180,13 @@
             .build();
 
         connection.on("ReceiveNotification", (message) => {
-            alert(message);
+            /*alert(message);*/
             updateNotificationCount();
         });
 
 
-        connection.on("ReceiveTweet", function (id, username, content, createdAt, likesCount, userId, isLikedByCurrentUser) {
-            addTweetToFeed(id, username, content, createdAt, likesCount, userId, isLikedByCurrentUser);
+        connection.on("ReceiveTweet", function (id, username, content, createdAt, likesCount, userId, isCurrentUser) {
+            addTweetToFeed(id, username, content, createdAt, likesCount, userId, isCurrentUser);
         });
 
         connection.start().catch(err => console.error(err.toString()));
@@ -446,5 +459,4 @@
             });
             return false;
         }
-
     });

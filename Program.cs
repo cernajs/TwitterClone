@@ -20,10 +20,14 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ITweetService, TweetService>();
 builder.Services.AddScoped<IHashtagService, HashtagService>();
+builder.Services.AddScoped<IHomeService, HomeService>();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>()
     .AddEntityFrameworkStores<TwitterContext>();
 builder.Services.AddSignalR();
+
+//services.AddHttpContextAccessor();
+
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
