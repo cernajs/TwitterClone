@@ -195,9 +195,14 @@
             addChatMessageToFeed(username, message);
         });
 
+        //var storedCount = localStorage.getItem("notificationCount") || 0;
+        //$("#notificationCount").text("Notifications (" + storedCount + ")");
+
         function updateNotificationCount() {
             $.get("/api/getNotificationCount", function(data) {
-                $("#notificationCount").text("Notifications ("+data.notificationCount+")");
+                $("#notificationCount").text("Notifications (" + data.notificationCount + ")");
+
+                /*localStorage.setItem("notificationCount", data.notificationCount);*/
             });
         }
         

@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using TwitterClone.Data;
+using TwitterClone.Models;
 
 using System.IO;
 using Microsoft.AspNetCore.Hosting;

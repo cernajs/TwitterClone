@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
+using TwitterClone.Models;
 using TwitterClone.Hubs;
 
 namespace TwitterClone.Data;

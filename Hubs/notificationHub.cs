@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
 using TwitterClone.Data;
+using TwitterClone.Models;
 using System.Collections.Concurrent;
 
 namespace TwitterClone.Hubs;

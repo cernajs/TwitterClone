@@ -1,5 +1,7 @@
 using System.Text.RegularExpressions;
 
+using TwitterClone.Models;
+
 namespace TwitterClone.Data;
 
 public class HashtagService : IHashtagService

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TwitterClone.Data;
+using TwitterClone.Models;
 
 namespace TwitterClone.Controllers;
 

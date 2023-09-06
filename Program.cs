@@ -1,6 +1,8 @@
 using System.Net;
 using TwitterClone.Hubs;
 using TwitterClone.Data;
+using TwitterClone.Models;
+using TwitterClone.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
@@ -21,12 +23,11 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ITweetService, TweetService>();
 builder.Services.AddScoped<IHashtagService, HashtagService>();
 builder.Services.AddScoped<IHomeService, HomeService>();
+builder.Services.AddScoped<IChatService, ChatService>();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>()
     .AddEntityFrameworkStores<TwitterContext>();
 builder.Services.AddSignalR();
-
-//services.AddHttpContextAccessor();
 
 
 builder.Services.Configure<CookiePolicyOptions>(options =>

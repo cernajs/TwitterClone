@@ -1,5 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-using System.Net.Mime;
+using TwitterClone.Models;
 
 namespace TwitterClone.Data;
 

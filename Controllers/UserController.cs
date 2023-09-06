@@ -11,7 +11,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 
-
 using TwitterClone.Data;
 using TwitterClone.Models;
 

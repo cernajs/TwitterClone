@@ -13,8 +13,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
-using TwitterClone.Data;
+
+using TwitterClone.Models;
+
 
 namespace tt.Areas.Identity.Pages.Account
 {

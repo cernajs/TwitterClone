@@ -1,6 +1,8 @@
 namespace TwitterClone.Data;
 using Microsoft.EntityFrameworkCore;
 
+using TwitterClone.Models;
+
 public class GetAllTweets : ITweetRetrievalStrategy {
     private readonly TwitterContext _tweetRepo;
 

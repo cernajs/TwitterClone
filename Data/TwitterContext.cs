@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
+using TwitterClone.Models;
+
 namespace TwitterClone.Data
 {
     public class TwitterContext : IdentityDbContext<ApplicationUser>

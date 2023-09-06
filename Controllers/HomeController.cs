@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Authorization;
 using TwitterClone.Data;
 using TwitterClone.Models;
 using TwitterClone.Hubs;
-using TwitterClone.SD;
 
 
 namespace TwitterClone.Controllers;

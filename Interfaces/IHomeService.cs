@@ -1,4 +1,6 @@
-﻿namespace TwitterClone.Data;
+﻿using TwitterClone.Models;
+
+namespace TwitterClone.Data;
 
 public interface IHomeService
 {

@@ -1,4 +1,4 @@
-namespace TwitterClone.Data;
+namespace TwitterClone.Models;
 
 public class RetweetedTweet : Tweet {
     public RetweetedTweet(Tweet tweet) {

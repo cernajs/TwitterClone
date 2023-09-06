@@ -1,49 +1,7 @@
 @model ICollection<ApplicationUser>
 
-<style>
-    .user-list {
-        display: flex;
-        flex-direction: column;
-    }
+<link rel="stylesheet" href="~/css/showLikes.css" asp-append-version="true" />
 
-    .user-item {
-        display: flex;
-        align-items: center;
-        border-bottom: 1px solid #ccc;
-        padding: 10px;
-    }
-
-    .user-avatar {
-        flex: 1;
-        max-width: 50px;
-    }
-
-        .user-avatar img {
-            width: 100%;
-            border-radius: 50%;
-        }
-
-    .user-info {
-        flex: 5;
-    }
-
-    .user-action {
-        flex: 1;
-    }
-
-    .follow-btn {
-        background-color: #1DA1F2;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        cursor: pointer;
-    }
-    
-    .follow-btn:hover {
-		background-color: #0c85d0;
-	}
-
-</style>
 
 @if (Model.Count == 0)
 {

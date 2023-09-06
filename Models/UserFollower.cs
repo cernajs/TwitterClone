@@ -1,4 +1,4 @@
-namespace TwitterClone.Data;
+namespace TwitterClone.Models;
 
 public class UserFollower
 {

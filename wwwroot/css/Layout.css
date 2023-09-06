@@ -1,0 +1,36 @@
+﻿.col-md-3, .col-md-6 {
+    border-left: 1px solid #e1e4e8;
+    border-right: 1px solid #e1e4e8;
+}
+
+.search-form {
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    outline: none;
+}
+
+    .search-input:focus {
+        border-color: #1da1f2;
+    }
+
+.search-form:before {
+    content: "\1F50D";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: #ccc;
+}
+
+.overflow-y-auto {
+    overflow-y: auto;
+    height: 100vh;
+    padding: 0px;
+}

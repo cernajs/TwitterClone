@@ -1,7 +1,8 @@
 using Internal;
-
 using System;
 using Microsoft.EntityFrameworkCore;
+
+using TwitterClone.Models;
 
 namespace TwitterClone.Data;
 

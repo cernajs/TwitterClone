@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TwitterClone.Data;
+namespace TwitterClone.Models;
 
 public class Tweet
 {

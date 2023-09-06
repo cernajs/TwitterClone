@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication;
 
-
 using TwitterClone.Models;
+
 
 namespace TwitterClone.Data;
 

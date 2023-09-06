@@ -1,0 +1,47 @@
+﻿.hidden-username {
+    display: none;
+}
+
+
+.tweet-form-container {
+    display: flex;
+    padding: 20px;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.user-avatar {
+    margin-right: 15px;
+}
+
+.tweet-input-container {
+    flex-grow: 1;
+}
+
+.tweet-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 18px;
+    padding: 10px 0;
+    resize: none;
+}
+
+.tweet-action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.tweet-submit-btn {
+    background-color: #1DA1F2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 25px;
+    cursor: pointer;
+}
+
+.tweet-submit-btn:hover {
+    background-color: #0c85d0;
+}
