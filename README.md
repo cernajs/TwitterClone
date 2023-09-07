@@ -2,7 +2,7 @@
 
 ## Introduction
 
-TwitterClone is project trying to immitate basic functionalities. Its build using ASP.NET core MVC, EF Core and SQL server on back end. On front end it uses Razor pages with combination of jQuery for ajax calls and reloads without refreshing the page.
+TwitterClone is project trying to immitate basic functionalities of Twitter. Its build using ASP.NET core MVC, EF Core and SQL server on back end. On front end it uses Razor pages with combination of jQuery for ajax calls and reloads without refreshing the page.
 Features implemented are :
  
 1. Register/Login using email and password
