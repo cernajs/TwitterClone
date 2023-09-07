@@ -20,5 +20,4 @@ public interface IUserService
 
     public Task<List<Tweet>> GetBookmarksAsync(string userId);
 
-    public Task<bool> RelogCurrrentUserAsync();
 }

@@ -61,6 +61,12 @@ public class TweetService : ITweetService
         return false;
     }
 
+    /// <summary>
+    ///     delete a tweet if the user is the owner of the tweet
+    /// </summary>
+    /// <param name="currentUserId"></param>
+    /// <param name="tweetId"></param>
+    /// <returns></returns>
     public async Task<bool> DeleteAsync(string currentUserId, int tweetId)
     {
         var tweet = await _tweetRepo.Tweets.FirstOrDefaultAsync(t => t.Id == tweetId);

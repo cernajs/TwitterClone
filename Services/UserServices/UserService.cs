@@ -12,18 +12,12 @@ public class UserService : IUserService
 {
     private readonly TwitterContext _tweetRepo;
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public UserService(TwitterContext db,
-                        UserManager<ApplicationUser> userManager,
-                        SignInManager<ApplicationUser> signInManager,
-                        IHttpContextAccessor httpContextAccessor)
+                        UserManager<ApplicationUser> userManager)
     {
         _tweetRepo = db;
         _userManager = userManager;
-        _signInManager = signInManager;
-        _httpContextAccessor = httpContextAccessor;
     }
 
     /// <summary>
@@ -196,25 +190,5 @@ public class UserService : IUserService
             .Include(b => b.Tweet.Replies)
             .Select(b => b.Tweet)
             .ToListAsync();
-    }
-
-    /// <summary>
-    ///     Relog the current user to update the claims
-    /// </summary>
-    /// <returns></returns>
-    public async Task<bool> RelogCurrrentUserAsync()
-    {
-        await _httpContextAccessor.HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
-
-        var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
-
-        if (user == null)
-        {
-            return false;
-        }
-
-        await _signInManager.SignInAsync(user, isPersistent: false);
-
-        return true;
     }
 }
