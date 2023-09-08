@@ -18,17 +18,14 @@ Features implemented are :
 
 ## getting started
 
-To run this project simply clone this project
-
-`git clone https://github.com/cernajs/tt.git`
-
 Install dependencies
 
 (via NuGet packet manager)
 
 Add migration
 
-- for migration change connection string in appsettings.jsonn
+- for migration change connection string in appsettings.json
+- add migration using add-migration `{migrationName}`
 - run `update-database` command with migration name,
 
 ## Getting Started
