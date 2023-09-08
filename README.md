@@ -31,7 +31,40 @@ Add migration
 - for migration change connection string in appsettings.jsonn
 - run `update-database` command with migration name,
 
-#### Contribution Guidelines
+## Getting Started
+**Creating an Account** :
 
--   **Code Review Process**: All code changes must be reviewed via pull requests.
--   **Adding functionality**: When adding functionality you can create new service or update new service. When Creating new service you also need to create new interface and add it to dependency injection in Program.cs. When adding functionality to existing service, first update already existing interface and then add functionality to specific implementation of service.
+- Visit the homepage.
+- Click on "Sign Up."
+- Enter your email, and password.
+
+**Logging In**:
+
+- Click on "Log In."
+- Enter your credentials and click "Submit."
+
+**Navigating the Homepage** :
+
+- Once logged in, you'll be directed to your home page where you can view your and other users tweets
+
+
+## Features and Usage
+**Posting a Tweet** :
+
+- Click on text What's happening in home page and start typing
+- Enter your tweet and click "Tweet"
+
+**Following Users**:
+
+- Search for users in the search bar.
+- Click on their profile and click "Follow."
+
+**Editing Profile**:
+
+- Go to your profile by clicking your username at the top right.
+- Click on "Edit Profile."
+- You can edit your username and email here.
+
+**Notifications**:
+
+- Real-time notifications will appear when user you follow post tweet
