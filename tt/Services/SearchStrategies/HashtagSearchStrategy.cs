@@ -14,7 +14,7 @@ public class HashtagSearch : ISearchStrategy
                       .Include(th => th.Hashtag)
                       .Include(th => th.Tweet)
                       .ThenInclude(t => t.User)
-                      .Where(th => th.Hashtag.Tag.Equals(query.Substring(1), StringComparison.OrdinalIgnoreCase))
+                      .Where(th => th.Hashtag.Tag.ToLower() == query.Substring(1).ToLower())
                       .Select(th => th.Tweet)
                       .ToListAsync();
     }

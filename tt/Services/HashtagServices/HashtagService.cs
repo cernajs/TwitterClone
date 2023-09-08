@@ -51,7 +51,7 @@ public class HashtagService : IHashtagService
                 Tag = hashtag
             };
             _tweetRepo.Hashtags.Add(newHashtag);
-
+            await _tweetRepo.SaveChangesAsync();
 
             var newTweetHashtag = new TweetHashtag
             {

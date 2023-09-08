@@ -49,12 +49,14 @@ namespace TwitterClone.Data
             builder.Entity<TweetLike>()
                 .HasOne(tl => tl.User)
                 .WithMany(u => u.LikedTweets)
-                .HasForeignKey(tl => tl.UserId);
+                .HasForeignKey(tl => tl.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<TweetLike>()
                 .HasOne(tl => tl.Tweet)
                 .WithMany(t => t.Likes)
-                .HasForeignKey(tl => tl.TweetId);
+                .HasForeignKey(tl => tl.TweetId)
+                .OnDelete(DeleteBehavior.Restrict);
 
 
             //comments
@@ -98,12 +100,14 @@ namespace TwitterClone.Data
             builder.Entity<TweetBookmark>()
                 .HasOne(tb => tb.User)
                 .WithMany(u => u.BookmarkedTweets)
-                .HasForeignKey(tb => tb.UserId);
+                .HasForeignKey(tb => tb.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<TweetBookmark>()
                 .HasOne(tb => tb.Tweet)
                 .WithMany(t => t.Bookmarks)
-                .HasForeignKey(tb => tb.TweetId);
+                .HasForeignKey(tb => tb.TweetId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             //retweets
             builder.Entity<Retweet>()
@@ -112,12 +116,14 @@ namespace TwitterClone.Data
             builder.Entity<Retweet>()
                 .HasOne(r => r.User)
                 .WithMany(u => u.Retweets)
-                .HasForeignKey(r => r.UserId);
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Retweet>()
                 .HasOne(r => r.Tweet)
                 .WithMany(t => t.Retweets)
-                .HasForeignKey(r => r.TweetId);
+                .HasForeignKey(r => r.TweetId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             //notifications
             builder.Entity<Notification>()

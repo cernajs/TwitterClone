@@ -14,7 +14,9 @@ var connectionString = builder.Configuration.GetConnectionString("ttIdentityDbCo
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<TwitterContext>(options => options.UseInMemoryDatabase("TwitterClone"));
+//builder.Services.AddDbContext<TwitterContext>(options => options.UseInMemoryDatabase("TwitterClone"));
+builder.Services.AddDbContext<TwitterContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 // strategy for retrieving tweets
 builder.Services.AddScoped<ITweetRetrievalStrategy, GetAllTweets>();
 builder.Services.AddScoped<IPopularTweetStrategy, PopularTweetStrategy>();
