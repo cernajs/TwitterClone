@@ -1,6 +1,6 @@
 ## Contribution Guidelines
-**Code Review Process**: All code changes must be reviewed via pull requests.
-**Adding functionality**: When adding functionality you can create new service or update new service. When Creating new service you also need to create new interface and add it to dependency injection in Program.cs. When adding functionality to existing service, first update already existing interface and then add functionality to specific implementation of service.
+-   **Code Review Process**: All code changes must be reviewed via pull requests.
+-   **Adding functionality**: When adding functionality you can create new service or update new service. When Creating new service you also need to create new interface and add it to dependency injection in Program.cs. When adding functionality to existing service, first update already existing interface and then add functionality to specific implementation of service.
 
 ## Codebase Overview
 **Controllers :**
