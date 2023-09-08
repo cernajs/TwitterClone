@@ -25,7 +25,7 @@ Install dependencies
 Add migration
 
 - for migration change connection string in appsettings.json
-- add migration using add-migration `{migrationName}`
+- add migration using `add-migration {migrationName}`
 - run `update-database` command with migration name,
 
 ## Getting Started
