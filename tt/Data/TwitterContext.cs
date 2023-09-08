@@ -56,7 +56,7 @@ namespace TwitterClone.Data
                 .HasOne(tl => tl.Tweet)
                 .WithMany(t => t.Likes)
                 .HasForeignKey(tl => tl.TweetId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
 
             //comments
@@ -107,7 +107,7 @@ namespace TwitterClone.Data
                 .HasOne(tb => tb.Tweet)
                 .WithMany(t => t.Bookmarks)
                 .HasForeignKey(tb => tb.TweetId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             //retweets
             builder.Entity<Retweet>()
@@ -123,7 +123,7 @@ namespace TwitterClone.Data
                 .HasOne(r => r.Tweet)
                 .WithMany(t => t.Retweets)
                 .HasForeignKey(r => r.TweetId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             //notifications
             builder.Entity<Notification>()
@@ -139,7 +139,7 @@ namespace TwitterClone.Data
                 .HasOne(n => n.Tweet)
                 .WithMany()
                 .HasForeignKey(n => n.TweetId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         
         }
     }

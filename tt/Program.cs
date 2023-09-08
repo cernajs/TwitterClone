@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.CookiePolicy;
 // using tt.Areas.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetConnectionString("ttIdentityDbContextConnection") ?? throw new InvalidOperationException("Connection string 'ttIdentityDbContextConnection' not found.");
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

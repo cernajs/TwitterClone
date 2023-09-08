@@ -69,7 +69,15 @@ public class TweetService : ITweetService
     /// <returns></returns>
     public async Task<bool> DeleteAsync(string currentUserId, int tweetId)
     {
-        var tweet = await _tweetRepo.Tweets.FirstOrDefaultAsync(t => t.Id == tweetId);
+        var tweet = await _tweetRepo.Tweets
+        .Include(t => t.Likes)
+        .Include(t => t.Retweets)
+        .Include(t => t.Replies)
+        .Include(t => t.TweetHashtags)
+        .Include(t => t.Bookmarks)
+
+        .FirstOrDefaultAsync(t => t.Id == tweetId);
+
         if (tweet == null)
         {
             return false;
@@ -80,9 +88,21 @@ public class TweetService : ITweetService
             return false;
         }
 
-        _tweetRepo.Tweets.Remove(tweet);
-        await _tweetRepo.SaveChangesAsync();
+        _tweetRepo.RemoveRange(tweet.Likes);
+        _tweetRepo.RemoveRange(tweet.Retweets);
+        _tweetRepo.RemoveRange(tweet.Replies);
+        _tweetRepo.RemoveRange(tweet.TweetHashtags);
+        _tweetRepo.RemoveRange(tweet.Bookmarks);
 
+        //remove notifications related to tweet
+        var notifications = await _tweetRepo.Notifications
+            .Where(n => n.TweetId == tweetId)
+            .ToListAsync();
+        _tweetRepo.Notifications.RemoveRange(notifications);
+
+        _tweetRepo.Tweets.Remove(tweet);
+
+        await _tweetRepo.SaveChangesAsync();
         return true;
     }
 

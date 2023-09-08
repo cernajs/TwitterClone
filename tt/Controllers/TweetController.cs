@@ -187,12 +187,12 @@ public class TweetController : Controller
         var currentUser = await _userService.GetUserAsync(User);
         if(currentUser == null)
         {
-            return NotFound();
+            return RedirectToAction("Index", "Home");
         }
         var tweet = await _tweetService.ReplyToTweetAsync(ParentTweetId, Content, currentUser);
         if(tweet == null)
         {
-            return NotFound();
+            return RedirectToAction("Index", "Home");
         }
 
         string referer = Request.Headers["Referer"].ToString();
@@ -215,7 +215,7 @@ public class TweetController : Controller
 
         if(parentTweet == null)
         {
-            return NotFound();
+            return RedirectToAction("Index", "Home");
         }
 
         replies ??= new List<Tweet>();

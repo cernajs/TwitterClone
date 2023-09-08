@@ -26,7 +26,7 @@
       <div class="tweet-header">
         <img src="@Model.User.ProfilePicture" alt="" class="avator">
         <div class="tweet-header-info">
-          <a asp-controller="User" asp-action="Index" asp-route-id="@Model.User.Id">@Model.Username:</a> <span>@Model.CreatedAt</span>
+          <a asp-controller="User" asp-action="Index" asp-route-id="@Model.User.Id">@Model.User.UserName:</a> <span>@Model.CreatedAt</span>
           <p>@Html.Raw(@Model.TweetContent)</p>
         </div>
       </div>
