@@ -60,6 +60,15 @@ body {
     font-weight: normal;
     margin-left: 5px;
   }
+
+.tweet-wrap .tweet-header-info {
+    max-width: 90%;
+}
+
+.tweet-wrap .tweet-header-info p {
+    max-width: 90%;
+    overflow-wrap: break-word;
+}
   
   .tweet-header-info p {
     font-weight: normal;
@@ -92,16 +101,6 @@ body {
     margin-top: 20px;
   }
   
-  /* Button Style */
-  /* .action-btn {
-    padding: 10px;
-    background-color: #1da1f2;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  } */
 
   .action-btn {
     padding: 10px;
@@ -117,12 +116,7 @@ body {
     background-color: rgba(29, 161, 242, 0.1);
     color: #1da1f2;
   }
-  
-  /* .action-btn:active, .action-btn:focus {
-    background-color: rgba(29, 161, 242, 0.2);
-    color: #1da1f2;
-    outline: none;
-  } */
+
   
   .action-btn:hover {
     background-color: #0e76a8;
