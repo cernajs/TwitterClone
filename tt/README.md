@@ -22,8 +22,6 @@ Install dependencies
 
 (via NuGet packet manager)
 
-change connection string in appsettings.json
-
 Add migration
 
 - for migration change connection string in appsettings.json
