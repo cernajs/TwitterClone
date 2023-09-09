@@ -15,7 +15,7 @@
             const tweetHtml = `
             <div class="tweet-relative-wrapper">
                 ${deleteButton}
-                <div class="clickable-div tweet-wrap" data-tweet-id="@Model.Id">
+                <div class="clickable-div tweet-wrap" data-tweet-id="${id}">
                     <div class="tweet-header">
                         <img src="avatar_url_here" alt="" class="avator">
                         <div class="tweet-header-info">
@@ -342,10 +342,10 @@
 
 
         // CLICKING ON TWEET RETURN VIEW WITH REPLIES
-        $(".clickable-div").on("click", function () {
+        $(document).on('click', '.clickable-div', function () {
             const tweetId = $(this).data("tweet-id");
             window.location.href = '/Tweet/ViewReplies/' + tweetId;
-        });
+        })
 
 
         // CLICKING ON SPECIFIC CHAT OPENS CHAT WITH THAT USER
