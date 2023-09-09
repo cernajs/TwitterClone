@@ -92,7 +92,6 @@ public class ApiControllerTests
             context.Notifications.Add(notification);
             await context.SaveChangesAsync();
 
-            // Create a real NotificationService instance
             var notificationService = new NotificationService(context, userManager, mockHubContext.Object);
 
             var homeService = new Mock<IHomeService>();
@@ -152,7 +151,6 @@ public class ApiControllerTests
             await context.TweetHashtags.AddRangeAsync(tweetHashtags);
             await context.SaveChangesAsync();
 
-            // Initialize HomeService
             var homeService = new HomeService(context);
 
             var controller = new ApiController(context, null, null, homeService);
@@ -170,7 +168,6 @@ public class ApiControllerTests
     [Fact]
     public async Task GetFollowSuggest_ShouldReturnCorrectUsers()
     {
-        // Arrange
         var options = new DbContextOptionsBuilder<TwitterContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
@@ -182,7 +179,6 @@ public class ApiControllerTests
             new Claim(ClaimTypes.NameIdentifier, fakeUserId),
         }));
 
-        // Populate the database with some users
         using (var arrangeContext = new TwitterContext(options))
         {
             arrangeContext.Users.Add(fakeUser);
@@ -191,7 +187,6 @@ public class ApiControllerTests
             arrangeContext.SaveChanges();
         }
 
-        // Create a real HomeService instance
         using (var context = new TwitterContext(options))
         {
             var mockUserStore = new Mock<IUserStore<ApplicationUser>>();

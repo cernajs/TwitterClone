@@ -213,7 +213,7 @@
             }
             ///Home/Search?searchQuery=%23a
             data.forEach(function(topic) {
-                $("#trendingTopicsList").append("<li>" + `<a href=\"Home/Search?searchQuery=%23${topic}\">` + "#" + topic + "<a>" + "</li>");
+                $("#trendingTopicsList").append("<li>" + `<a href=\"/Home/Search?searchQuery=%23${topic}\">` + "#" + topic + "<a>" + "</li>");
             });
         });
 

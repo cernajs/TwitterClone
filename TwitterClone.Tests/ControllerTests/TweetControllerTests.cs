@@ -239,13 +239,13 @@ public class TweetControllerTests
     }
 
     [Fact]
-    public async Task TestReply_TweetNotCreated_ShouldReturnNotFound()
+    public async Task TestReply_TweetNotCreated_ShouldReturnRedirectToActionResult()
     {
         InitializeTest();
 
         var result = await controller.Reply(1, "d");
 
-        Assert.IsType<NotFoundResult>(result);
+        Assert.IsType<RedirectToActionResult>(result);
         
     }
 
@@ -274,7 +274,7 @@ public class TweetControllerTests
 
         var result = await controller.ViewReplies(1);
 
-        Assert.IsType<NotFoundResult>(result);
+        Assert.IsType<RedirectToActionResult>(result);
     }
 
 

@@ -129,10 +129,8 @@ public class HomeControllerTest
                                                 userManager, viewStrategy,
                                                 mockPopularTweetStrategy.Object, mockNotificationService.Object);
 
-            // Act
             var result = await controller.Index();
 
-            // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
             var model = Assert.IsAssignableFrom<IEnumerable<Tweet>>(viewResult.ViewData.Model);
             Assert.Equal(4, model.Count());
