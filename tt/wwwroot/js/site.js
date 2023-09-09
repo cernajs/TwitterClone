@@ -101,6 +101,7 @@
 
         $(document).ready(function () {
 
+            // LIKE BUTTON HANDLING
             $(document).on('submit', '.like-form', function(e) {
                 e.preventDefault();
                 handleLikeUnlike($(this), true);
@@ -150,6 +151,7 @@
             }
 
 
+            // TWEET CREATION
             $("#tweetCreationForm").submit(function (event) {
                 event.preventDefault();
 
@@ -174,7 +176,7 @@
             });
 
 
-            //SIGNALR
+        //SIGNALR CONNECTIONS
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/notificationHub")
             .build();
@@ -243,7 +245,9 @@
             document.getElementById("chatArea").innerHTML += messageElement;
         });
 
-        
+
+
+        //CHAT FUNCTIONALITY
         function getFormattedDateTime(timeZone) {
             const date = new Date();
             
@@ -336,11 +340,15 @@
         });
 
 
+
+        // CLICKING ON TWEET RETURN VIEW WITH REPLIES
         $(".clickable-div").on("click", function () {
             const tweetId = $(this).data("tweet-id");
             window.location.href = '/Tweet/ViewReplies/' + tweetId;
         });
 
+
+        // CLICKING ON SPECIFIC CHAT OPENS CHAT WITH THAT USER
         $(".chat").on("click", function () {
             const chatId = $(this).data("tweet-id");
             window.location.href = '/Chat/ChatWithSpecificUser/' + chatId;
