@@ -181,13 +181,13 @@ public class TweetService : ITweetService
     {
         // Query for the parent tweet
         var parentTweet = await _tweetRepo.Tweets
-                                          .Include(t => t.User) // Include the user information
+                                          .Include(t => t.User)
                                           .FirstOrDefaultAsync(t => t.Id == id);
 
         // Query for the replies
         var replies = await _tweetRepo.Tweets
                                       .Include(t => t.ParentTweet)
-                                      .Include(t => t.User) // Include the user information
+                                      .Include(t => t.User)
                                       .Where(t => t.ParentTweetId == id)
                                       .ToListAsync();
 

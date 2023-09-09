@@ -9,8 +9,7 @@ public class UsernameSearch : ISearchStrategy
     {
         return await context.Tweets
                       .Include(t => t.User)
-                      .Where(t => t.Username.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                                  t.TweetContent.Contains(query, StringComparison.OrdinalIgnoreCase))
+                      .Where(t => t.Username.Contains(query) || t.TweetContent.Contains(query))
                       .ToListAsync();
     }
 }
