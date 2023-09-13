@@ -80,7 +80,7 @@ namespace tt.Areas.Identity.Pages.Account
         /// </summary>
         public class InputModel
         {
-
+            [Required(ErrorMessage = "Profile picture is required.")]
             [Display(Name = "Profile Picture")]
             public IFormFile ProfilePicture { get; set; }
             /// <summary>
@@ -100,6 +100,8 @@ namespace tt.Areas.Identity.Pages.Account
             [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
             [DataType(DataType.Password)]
             [Display(Name = "Password")]
+            [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
+                ErrorMessage = "The password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.")]
             public string Password { get; set; }
 
             /// <summary>

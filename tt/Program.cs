@@ -13,9 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-//builder.Services.AddDbContext<TwitterContext>(options => options.UseInMemoryDatabase("TwitterClone"));
+
 builder.Services.AddDbContext<TwitterContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 // strategy for retrieving tweets
 builder.Services.AddScoped<ITweetRetrievalStrategy, GetAllTweets>();
 builder.Services.AddScoped<IPopularTweetStrategy, PopularTweetStrategy>();
@@ -29,7 +30,6 @@ builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddDefaultIdentity<ApplicationUser>()
     .AddEntityFrameworkStores<TwitterContext>();
 builder.Services.AddSignalR();
-
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
