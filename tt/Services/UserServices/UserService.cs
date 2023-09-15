@@ -12,12 +12,15 @@ public class UserService : IUserService
 {
     private readonly TwitterContext _tweetRepo;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly INotificationService _notificationService;
 
     public UserService(TwitterContext db,
-                        UserManager<ApplicationUser> userManager)
+                        UserManager<ApplicationUser> userManager,
+                        INotificationService notificationService)
     {
         _tweetRepo = db;
         _userManager = userManager;
+        _notificationService = notificationService;
     }
 
     /// <summary>
@@ -71,6 +74,8 @@ public class UserService : IUserService
 
         _tweetRepo.UserFollowers.Add(userFollower);
         await _tweetRepo.SaveChangesAsync();
+
+        await _notificationService.NotifyUserOfNewFollow(userIdToFollow, followerId);
 
         return true;
     }
@@ -183,7 +188,7 @@ public class UserService : IUserService
         return _tweetRepo.TweetBookmarks
             .Where(b => b.UserId == userId)
             .Include(b => b.Tweet)
-            .ThenInclude(t => t.User)
+                .ThenInclude(t => t.User)
             .Include(b => b.Tweet.Likes)
             .Include(b => b.Tweet.Bookmarks)
             .Include(b => b.Tweet.Retweets)

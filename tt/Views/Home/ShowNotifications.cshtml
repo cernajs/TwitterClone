@@ -2,21 +2,47 @@
 
 <link rel="stylesheet" href="~/css/listHeader.css" asp-append-version="true" />
 
+<style>
+    .notification-column {
+        margin: 0 auto;
+    }
+</style>
+
 @if (Model.Count == 0)
 {
     <div class="alert alert-info">
         You have no notifications!
     </div>
 }
-
-<ul>
-    @foreach (var notification in Model)
-    {
-        <li>
-            @if (notification.Tweet != null)
-            {
-                <partial name="_TweetPartial" model="notification.Tweet" />
-            }
-        </li>
-    }
-</ul>
+<div class="notification-column">
+    <ul>
+        @foreach (var notification in Model)
+        {
+            <li>
+                @{
+                    switch (notification.Type)
+                    {
+                        case NotificationType.Tweet:
+                            @Html.Partial("_TweetPartial", notification.Tweet)
+                            break;
+                        case NotificationType.ChatMessage:
+                            @Html.Partial("_MessageNotificationPartial", notification)
+                            break;
+                        case NotificationType.Following:
+                            @Html.Partial("_FollowNotificationPartial", notification)
+                            break;
+                        case NotificationType.TweetLike:
+                            @Html.Partial("_TweetLikeNotificationPartial", notification)
+                            break;
+                        case NotificationType.TweetReply:
+                            @Html.Partial("_TweetReplyNotificationPartial", notification)
+                            break;
+                        default:
+                            <p>other notification @notification.Type</p>
+                            break;
+                    }
+                }
+            </li>
+        }
+    </ul>
+</div>

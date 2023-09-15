@@ -53,8 +53,9 @@ public class TweetControllerTests
         mockHubContext = new Mock<IHubContext<NotificationHub>>();
 
         context = new TwitterContext(options);
-        userService = new UserService(context, userManager);
+        
         notificationService = new NotificationService(context, userManager, mockHubContext.Object);
+        userService = new UserService(context, userManager, notificationService);
         tweetService = new TweetService(context);
         hashtagService = new HashtagService(context);
         controller = new TweetController(context, userService, notificationService, tweetService, hashtagService);

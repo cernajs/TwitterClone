@@ -44,7 +44,10 @@ namespace TwitterClone.Data
 
             //likes
             builder.Entity<TweetLike>()
-                .HasKey(tl => new { tl.UserId, tl.TweetId });
+                .HasKey(tl => tl.Id);
+
+            builder.Entity<TweetLike>()
+                .HasAlternateKey(tl => new { tl.UserId, tl.TweetId });
 
             builder.Entity<TweetLike>()
                 .HasOne(tl => tl.User)
@@ -127,7 +130,7 @@ namespace TwitterClone.Data
 
             //notifications
             builder.Entity<Notification>()
-                .HasKey(n => new { n.UserId, n.TweetId });
+                .HasKey(n => n.Id);
 
             builder.Entity<Notification>()
                 .HasOne(n => n.User)
@@ -139,8 +142,17 @@ namespace TwitterClone.Data
                 .HasOne(n => n.Tweet)
                 .WithMany()
                 .HasForeignKey(n => n.TweetId)
-                .OnDelete(DeleteBehavior.Cascade);
-        
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Notification>()
+                .HasOne(n => n.TweetLike)
+                .WithMany()
+                .HasForeignKey(n => n.TweetLikeId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
         }
     }
 }

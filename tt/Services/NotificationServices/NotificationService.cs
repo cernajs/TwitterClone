@@ -64,12 +64,12 @@ public class NotificationService : INotificationService
 
         foreach(var follower in followers)
         {
-
             var notification = new Notification
             {
                 UserId = follower,
                 Message = message,
                 TweetId = tweetId,
+                Type = NotificationType.Tweet,
                 Timestamp = DateTime.Now
             };
 
@@ -79,6 +79,88 @@ public class NotificationService : INotificationService
             await _hubContext.Clients.User(follower).SendAsync("ReceiveNotification", message);
         }
     }
+
+    public async Task NotifyTweetOwner(string userId, int tweetId, NotificationType type)
+    {
+        var tweet = await _tweetRepo.Tweets
+            .Include(t => t.User)
+            .FirstOrDefaultAsync(t => t.Id == tweetId);
+
+        if(tweet == null)
+        {
+            return;
+        }
+
+        Notification notification;
+
+        notification = type switch
+        {
+            NotificationType.TweetLike => new Notification
+            {
+                UserId = tweet.User.Id,
+                Message = $"{userId} liked your tweet",
+                TweetId = tweetId,
+                Type = type,
+                Timestamp = DateTime.Now
+            },
+            NotificationType.TweetReply => new Notification
+            {
+                UserId = tweet.User.Id,
+                Message = $"{userId} replied to your tweet",
+                TweetId = tweetId,
+                Type = type,
+                Timestamp = DateTime.Now
+            },
+            _ => throw new NotImplementedException(),
+        };
+
+        _tweetRepo.Notifications.Add(notification);
+        await _tweetRepo.SaveChangesAsync();
+
+        await _hubContext.Clients.User(tweet.User.Id).SendAsync("ReceiveNotification", notification.Message);
+    }
+
+    public async Task NotifyRecipientAsync(ChatMessageDto chatMessageDto, string senderId)
+    {
+        var recipient = await _userManager.FindByIdAsync(chatMessageDto.RecipientId);
+
+        if (recipient == null)
+        {
+            return;
+        }
+
+        var notification = new Notification
+        {
+            UserId = recipient.Id,
+            Message = chatMessageDto.Content,
+            SenderId = senderId,
+            Type = NotificationType.ChatMessage,
+            Timestamp = DateTime.Now
+        };
+
+        _tweetRepo.Notifications.Add(notification);
+        await _tweetRepo.SaveChangesAsync();
+
+        await _hubContext.Clients.User(recipient.Id).SendAsync("ReceiveNotification", notification.Message);
+    }
+
+    public async Task NotifyUserOfNewFollow(string userId, string followerId)
+    {
+        var notification = new Notification
+        {
+            UserId = userId,
+            Message = $"{followerId} started following you",
+            FollowerId = followerId,
+            Type = NotificationType.Following,
+            Timestamp = DateTime.Now
+        };
+
+        _tweetRepo.Notifications.Add(notification);
+        await _tweetRepo.SaveChangesAsync();
+
+        await _hubContext.Clients.User(userId).SendAsync("ReceiveNotification", notification.Message);
+    }
+
 
     /// <summary>
     ///     Return the number of notifications for a given user
@@ -104,6 +186,7 @@ public class NotificationService : INotificationService
         var notifications = await _tweetRepo.Notifications
             .Include(n => n.Tweet)
             .Include(n => n.Tweet.User)
+            .Include(n => n.TweetLike)
             .Where(n => n.UserId == userId)
             .OrderByDescending(n => n.Timestamp)
             .ToListAsync();

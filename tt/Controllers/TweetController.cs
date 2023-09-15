@@ -122,10 +122,13 @@ public class TweetController : Controller
 
         var like = await _tweetService.LikeTweetAsync(userId, tweetId);
 
-        if(!like)
+        if (!like)
         {
             return Json(new { success = false, action = "like failed" });
         }
+
+        await _notificationService.NotifyTweetOwner(userId, tweetId, NotificationType.TweetLike);
+
         return Json(new { success = true, action = "liked" });
     }
 
@@ -194,6 +197,8 @@ public class TweetController : Controller
         {
             return RedirectToAction("Index", "Home");
         }
+
+        await _notificationService.NotifyTweetOwner(currentUser.Id, ParentTweetId, NotificationType.TweetReply);
 
         string referer = Request.Headers["Referer"].ToString();
         if (!string.IsNullOrEmpty(referer))

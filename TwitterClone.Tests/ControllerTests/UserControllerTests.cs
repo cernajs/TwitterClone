@@ -33,6 +33,7 @@ public class UserControllerTests
     ClaimsPrincipal fakeClaimsPrincipal;
     Mock<UserManager<ApplicationUser>> mockUserManager;
     ApplicationUser fakeUser;
+    Mock<INotificationService> mockNotificationService;
 
 
     private void InitializeTest()
@@ -56,8 +57,9 @@ public class UserControllerTests
         mockSignInManager = new Mock<SignInManager<ApplicationUser>>
             (userManager, new HttpContextAccessor(), new Mock<IUserClaimsPrincipalFactory<ApplicationUser>>().Object, null, null, null, null);
 
+        mockNotificationService = new Mock<INotificationService>();
         context = new TwitterContext(options);
-        userService = new UserService(context, userManager);
+        userService = new UserService(context, userManager, mockNotificationService.Object);
         controller = new UserController(context, userManager, mockSignInManager.Object, userService);
 
         var fakeUserId = "1";

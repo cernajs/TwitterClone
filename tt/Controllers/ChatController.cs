@@ -26,16 +26,19 @@ public class ChatController : Controller
     private readonly TwitterContext _tweetRepo;
     private readonly IUserService _userService;
     private readonly IChatService _chatService;
+    private readonly INotificationService _notificationService;
 
     public ChatController(ILogger<ChatController> logger,
                             TwitterContext db,
                             IUserService userService,
-                            IChatService chatService)
+                            IChatService chatService,
+                            INotificationService notificationService)
     {
         _logger = logger;
         _tweetRepo = db;
         _userService = userService;
         _chatService = chatService;
+        _notificationService = notificationService;
     }
 
     /// <summary>
@@ -95,6 +98,8 @@ public class ChatController : Controller
         if (sender == null) return Challenge();
 
         var result = await _chatService.CreateMessageAsync(chatMessageDto, sender.Id);
+
+        await _notificationService.NotifyRecipientAsync(chatMessageDto, sender.Id);
 
         if (!result) return RedirectToAction("ChatWithSpecificUser", new { id = chatMessageDto.RecipientId });
 

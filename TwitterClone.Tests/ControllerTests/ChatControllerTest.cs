@@ -31,6 +31,7 @@ public class ChatControllerTest
     Mock<IUserService> mockUserService;
     ApplicationUser fakeUser;
     ClaimsPrincipal fakeClaimsPrincipal;
+    Mock<INotificationService> mockNotificationService;
 
     private void InitializeTest()
     {
@@ -46,6 +47,7 @@ public class ChatControllerTest
 
         mockUserService.Setup(u => u.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
                        .ReturnsAsync(fakeUser);
+
 
         fakeClaimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
         {
@@ -72,7 +74,7 @@ public class ChatControllerTest
 
             var realChatService = new ChatService(context);
 
-            var controller = new ChatController(mockLogger.Object, context, mockUserService.Object, realChatService)
+            var controller = new ChatController(mockLogger.Object, context, mockUserService.Object, realChatService, mockNotificationService.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -111,7 +113,7 @@ public class ChatControllerTest
             await context.SaveChangesAsync();
 
             var realChatService = new ChatService(context);
-            var controller = new ChatController(null, context, mockUserService.Object, realChatService)
+            var controller = new ChatController(null, context, mockUserService.Object, realChatService, mockNotificationService.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -146,7 +148,7 @@ public class ChatControllerTest
         using (var context = new TwitterContext(options))
         {
             var realChatService = new ChatService(context);
-            var controller = new ChatController(null, context, mockUserService.Object, realChatService)
+            var controller = new ChatController(null, context, mockUserService.Object, realChatService, mockNotificationService.Object)
             {
                 ControllerContext = new ControllerContext
                 {
