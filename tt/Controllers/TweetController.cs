@@ -62,7 +62,8 @@ public class TweetController : Controller
             await _hashtagService.CreateHashtagsAsync(hashtags, newTweet.Id);
         }
 
-        await _notificationService.NotifyFollowersOfNewTweetAsync(user.Id, "New tweet posted!", newTweet.Id);
+        var message = $"New tweet posted by {user.UserName}";
+        await _notificationService.NotifyFollowersOfNewTweetAsync(user.Id, message, newTweet.Id);
 
         await _notificationService.SendTweetNotificationAsync(
             newTweet.Id, 
@@ -127,7 +128,7 @@ public class TweetController : Controller
             return Json(new { success = false, action = "like failed" });
         }
 
-        await _notificationService.NotifyTweetOwner(userId, tweetId, NotificationType.TweetLike);
+        await _notificationService.NotifyTweetOwner(userId, tweetId, $"{user.UserName} liked your tweet", NotificationType.TweetLike);
 
         return Json(new { success = true, action = "liked" });
     }
@@ -198,7 +199,7 @@ public class TweetController : Controller
             return RedirectToAction("Index", "Home");
         }
 
-        await _notificationService.NotifyTweetOwner(currentUser.Id, ParentTweetId, NotificationType.TweetReply);
+        await _notificationService.NotifyTweetOwner(currentUser.Id, ParentTweetId, $"{currentUser.UserName} replied to your tweet", NotificationType.TweetReply);
 
         string referer = Request.Headers["Referer"].ToString();
         if (!string.IsNullOrEmpty(referer))
@@ -218,7 +219,9 @@ public class TweetController : Controller
     {
         var (parentTweet, replies) = await _tweetService.ViewRepliesAndParentAsync(id);
 
-        if(parentTweet == null)
+        ViewBag.IsCommentList = true;
+
+        if (parentTweet == null)
         {
             return RedirectToAction("Index", "Home");
         }

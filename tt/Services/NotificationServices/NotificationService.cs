@@ -80,16 +80,17 @@ public class NotificationService : INotificationService
         }
     }
 
-    public async Task NotifyTweetOwner(string userId, int tweetId, NotificationType type)
+    public async Task NotifyTweetOwner(string userId, int tweetId, string message, NotificationType type)
     {
         var tweet = await _tweetRepo.Tweets
             .Include(t => t.User)
             .FirstOrDefaultAsync(t => t.Id == tweetId);
 
-        if(tweet == null)
-        {
-            return;
-        }
+        if (tweet == null) return;
+
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user == null) return;
 
         Notification notification;
 
@@ -98,7 +99,7 @@ public class NotificationService : INotificationService
             NotificationType.TweetLike => new Notification
             {
                 UserId = tweet.User.Id,
-                Message = $"{userId} liked your tweet",
+                Message = message,
                 TweetId = tweetId,
                 Type = type,
                 Timestamp = DateTime.Now
@@ -106,7 +107,7 @@ public class NotificationService : INotificationService
             NotificationType.TweetReply => new Notification
             {
                 UserId = tweet.User.Id,
-                Message = $"{userId} replied to your tweet",
+                Message = message,
                 TweetId = tweetId,
                 Type = type,
                 Timestamp = DateTime.Now
@@ -120,19 +121,12 @@ public class NotificationService : INotificationService
         await _hubContext.Clients.User(tweet.User.Id).SendAsync("ReceiveNotification", notification.Message);
     }
 
-    public async Task NotifyRecipientAsync(ChatMessageDto chatMessageDto, string senderId)
+    public async Task NotifyRecipientAsync(ChatMessageDto chatMessageDto, string message, string senderId)
     {
-        var recipient = await _userManager.FindByIdAsync(chatMessageDto.RecipientId);
-
-        if (recipient == null)
-        {
-            return;
-        }
-
         var notification = new Notification
         {
-            UserId = recipient.Id,
-            Message = chatMessageDto.Content,
+            UserId = chatMessageDto.RecipientId,
+            Message = message,
             SenderId = senderId,
             Type = NotificationType.ChatMessage,
             Timestamp = DateTime.Now
@@ -141,15 +135,17 @@ public class NotificationService : INotificationService
         _tweetRepo.Notifications.Add(notification);
         await _tweetRepo.SaveChangesAsync();
 
-        await _hubContext.Clients.User(recipient.Id).SendAsync("ReceiveNotification", notification.Message);
+        await _hubContext.Clients.User(chatMessageDto.RecipientId).SendAsync("ReceiveNotification", notification.Message);
     }
 
     public async Task NotifyUserOfNewFollow(string userId, string followerId)
     {
+        var follower = await _userManager.FindByIdAsync(followerId);
+
         var notification = new Notification
         {
             UserId = userId,
-            Message = $"{followerId} started following you",
+            Message = $"{follower.UserName} started following you",
             FollowerId = followerId,
             Type = NotificationType.Following,
             Timestamp = DateTime.Now

@@ -136,6 +136,7 @@ public class TweetService : ITweetService
     public Task<IEnumerable<ApplicationUser>> ShowLikesAsync(int id)
     {
         return _tweetRepo.Tweets
+            .Include(t => t.Likes)
             .Where(t => t.Id == id)
             .SelectMany(t => t.Likes.Select(l => l.User))
             .ToListAsync()
@@ -182,12 +183,14 @@ public class TweetService : ITweetService
         // Query for the parent tweet
         var parentTweet = await _tweetRepo.Tweets
                                           .Include(t => t.User)
+                                          .Include(t => t.Likes)
                                           .FirstOrDefaultAsync(t => t.Id == id);
 
         // Query for the replies
         var replies = await _tweetRepo.Tweets
                                       .Include(t => t.ParentTweet)
                                       .Include(t => t.User)
+                                      .Include(t => t.Likes)
                                       .Where(t => t.ParentTweetId == id)
                                       .ToListAsync();
 

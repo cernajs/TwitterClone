@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.CookiePolicy;
+using System;
 // using tt.Areas.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,17 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<TwitterContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//var environment = builder.Environment;
+//if (environment.IsDevelopment())
+//{
+//    builder.Services.AddDbContext<TwitterContext>(options =>
+//        options.UseInMemoryDatabase("InMemoryDB"));
+//}
+//else
+//{
+//    builder.Services.AddDbContext<TwitterContext>(options =>
+//        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//}
 
 // strategy for retrieving tweets
 builder.Services.AddScoped<ITweetRetrievalStrategy, GetAllTweets>();
@@ -35,6 +47,16 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 {
     options.CheckConsentNeeded = context => true;
     options.MinimumSameSitePolicy =  SameSiteMode.Lax;
+});
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequiredUniqueChars = 1;
 });
 
 var app = builder.Build();

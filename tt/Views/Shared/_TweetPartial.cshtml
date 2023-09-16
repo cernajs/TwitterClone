@@ -13,6 +13,14 @@
   </div>
 }
 
+@if (Model.ParentTweetId != null && ViewBag.IsCommentList != true)
+{
+  <div class="d-flex align-items-center">
+    <i class="fa fa-reply mr-2"></i>
+        <p class="mb-0">Reply to <a asp-controller="Tweet" asp-action="ViewReplies" asp-route-id="@Model.ParentTweetId">tweet</a></p>
+  </div>
+}
+
 <div class="tweet-relative-wrapper">
     @if (Model.User.Id == User.FindFirstValue(ClaimTypes.NameIdentifier))
 	{

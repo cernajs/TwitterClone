@@ -23,7 +23,7 @@
                     switch (notification.Type)
                     {
                         case NotificationType.Tweet:
-                            @Html.Partial("_TweetPartial", notification.Tweet)
+                            @Html.Partial("_TweetNotificationPartial", notification)
                             break;
                         case NotificationType.ChatMessage:
                             @Html.Partial("_MessageNotificationPartial", notification)

@@ -9,11 +9,20 @@
 </script>
 
 <div id="chatContainer">
+    @{
+        var user = (Model.messages[0].Recipient.UserName == Model.currentUserName ? Model.messages[0].Sender : Model.messages[0].Recipient);
+    }
+    <div class="tweet-header">
+        <img src="@user.ProfilePicture" alt="" class="avator">
+        <div class="tweet-header-info">
+            <a asp-controller="User" asp-action="Index" asp-route-id="@user.Id">@user.UserName</a>
+        </div>
+    </div>
     <div id="chatArea">
         @foreach(var message in Model.messages)
         {
             <div class="@(message.SenderId == Model.currentUserId ? "myMessage" : "otherMessage")">
-            <span>@message.Sender : @message.Content</span>
+            <span>@message.Content</span>
             <span class="timestamp">@message.Timestamp.ToString("g")</span>
         </div>
         }

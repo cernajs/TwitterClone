@@ -8,9 +8,9 @@ public interface INotificationService
 
     Task NotifyFollowersOfNewTweetAsync(string userId, string message, int tweetId);
 
-    Task NotifyTweetOwner(string userId, int tweetId, NotificationType type);
+    Task NotifyTweetOwner(string userId, int tweetId, string message, NotificationType type);
 
-    Task NotifyRecipientAsync(ChatMessageDto chatMessageDto, string senderId);
+    Task NotifyRecipientAsync(ChatMessageDto chatMessageDto, string message, string senderId);
 
     Task NotifyUserOfNewFollow(string userId, string followerId);
 

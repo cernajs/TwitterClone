@@ -1,8 +1,8 @@
 ﻿.notification {
-    background-color: #f1f1f1; /* Light gray background */
-    border: 1px solid #ccc; /* Border */
-    padding: 16px; /* Padding */
-    margin: 8px 0; /* Margin between boxes */
-    border-radius: 8px; /* Rounded corners */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Box shadow */
+    border: 1px solid #ccc;
+    padding: 16px;
+    margin: 8px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor : pointer;
 }

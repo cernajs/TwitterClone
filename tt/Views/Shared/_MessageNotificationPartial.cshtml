@@ -2,9 +2,6 @@
 
 <link rel="stylesheet" href="~/css/notification.css" asp-append-version="true" />
 
-<div class="notification" data-tweet-id="@Model.SenderId">
-    You have new message from @Model.SenderId
-    <div class="mostRecentMessage">
-        @Model.Message
-    </div>
+<div class="messageNotification notification" data-id="@Model.SenderId">
+    @Model.Message
 </div>

@@ -99,9 +99,10 @@ public class ChatController : Controller
 
         var result = await _chatService.CreateMessageAsync(chatMessageDto, sender.Id);
 
-        await _notificationService.NotifyRecipientAsync(chatMessageDto, sender.Id);
-
         if (!result) return RedirectToAction("ChatWithSpecificUser", new { id = chatMessageDto.RecipientId });
+
+        var message = $"New message from {sender.UserName}";
+        await _notificationService.NotifyRecipientAsync(chatMessageDto, message, sender.Id);
 
         return Ok();
     }

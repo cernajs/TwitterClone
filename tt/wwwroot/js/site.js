@@ -433,6 +433,33 @@
             return false;
         }
 
+        // NOTIFICATIONS
+        $('.followNotification').on('click', function () {
+            const id = $(this).data("id");
+            window.location.href = '/User/Index/' + id;
+        })
+
+        $('.messageNotification').on('click', function () {
+            const id = $(this).data("id");
+            window.location.href = '/Chat/ChatWithSpecificUser/' + id;
+        })
+
+        $('.likeNotification').on('click', function () {
+            const id = $(this).data("id");
+            window.location.href = '/Tweet/ViewReplies/' + id;
+        })
+
+        $('.replyNotification').on('click', function () {
+            const id = $(this).data("id");
+            window.location.href = '/Tweet/ViewReplies/' + id;
+        })
+
+        $('.tweetNotification').on('click', function () {
+            const id = $(this).data("id");
+            window.location.href = '/Tweet/ViewReplies/' + id;
+        })
+
+
         // Retweet buttons
         $(document).on('submit', '.retweet-form', function(e) {
             e.preventDefault();

@@ -46,6 +46,7 @@ public class ChatService : IChatService
             .Where(m => (m.SenderId == currentUserId && m.RecipientId == otherUserId) ||
                         (m.SenderId == otherUserId && m.RecipientId == currentUserId))
             .Include(m => m.Sender)
+            .Include(m => m.Recipient)
             .OrderBy(m => m.Timestamp)
             .ToListAsync();
     }
