@@ -147,6 +147,7 @@ body {
 
 .tweet-relative-wrapper {
     position: relative;
+    cursor: pointer;
 }
 
 .delete-button {

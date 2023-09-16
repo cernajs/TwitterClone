@@ -138,7 +138,8 @@ public class TweetControllerTests
         Assert.True(success);
 
 
-        var likedTweet = await context.TweetLikes.FindAsync(fakeUser.Id, tweet.Id);
+        var likedTweet = await context.TweetLikes.FirstOrDefaultAsync(l => l.TweetId == tweet.Id && l.UserId == fakeUser.Id);
+
         Assert.NotNull(likedTweet);
         
     }
@@ -166,7 +167,8 @@ public class TweetControllerTests
         var success = (bool)propertyInfo.GetValue(value, null);
         Assert.True(success);
 
-        var likedTweet = await context.TweetLikes.FindAsync(fakeUser.Id, tweet.Id);
+
+        var likedTweet = await context.TweetLikes.FirstOrDefaultAsync(l => l.TweetId == tweet.Id && l.UserId == fakeUser.Id);
         Assert.Null(likedTweet);
     }
 

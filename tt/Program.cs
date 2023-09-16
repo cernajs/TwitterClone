@@ -15,19 +15,17 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddDbContext<TwitterContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-//var environment = builder.Environment;
-//if (environment.IsDevelopment())
-//{
-//    builder.Services.AddDbContext<TwitterContext>(options =>
-//        options.UseInMemoryDatabase("InMemoryDB"));
-//}
-//else
-//{
-//    builder.Services.AddDbContext<TwitterContext>(options =>
-//        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-//}
+var environment = builder.Environment;
+if (environment.IsDevelopment())
+{
+    builder.Services.AddDbContext<TwitterContext>(options =>
+        options.UseInMemoryDatabase("InMemoryDB"));
+}
+else
+{
+    builder.Services.AddDbContext<TwitterContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+}
 
 // strategy for retrieving tweets
 builder.Services.AddScoped<ITweetRetrievalStrategy, GetAllTweets>();

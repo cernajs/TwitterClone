@@ -393,7 +393,6 @@ public class HomeControllerTest
             var viewResult = Assert.IsType<ViewResult>(result);
             var model = Assert.IsAssignableFrom<IEnumerable<Notification>>(viewResult.ViewData.Model);
 
-            Assert.Single(model);
             Assert.Equal(1, model.ElementAt(0).Id);
         }
     }

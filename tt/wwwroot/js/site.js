@@ -90,7 +90,7 @@
             const chatMessageHtml = `
                 <div class="container">
                     <li>
-                        ${username}: ${message}
+                        ${message}
                     </li>
                 </div>
             `;
@@ -356,6 +356,10 @@
 
 
         // Tweet buttons
+        $(document).on('click', '.action-btn', function (event) {
+            event.stopPropagation();
+        });
+
         $(".action-btn").on("click", function (event) {
             event.stopPropagation();
         });

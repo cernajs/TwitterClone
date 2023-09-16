@@ -41,6 +41,7 @@ public class ChatControllerTest
 
         mockLogger = new Mock<ILogger<ChatController>>();
         mockUserService = new Mock<IUserService>();
+        mockNotificationService = new Mock<INotificationService>();
 
         var fakeUserId = "1";
         fakeUser = new ApplicationUser { Id = fakeUserId };

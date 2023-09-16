@@ -92,6 +92,9 @@ public class NotificationService : INotificationService
 
         if (user == null) return;
 
+        // Don't notify the owner of the tweet
+        if (tweet.User.Id == user.Id) return;
+
         Notification notification;
 
         notification = type switch
